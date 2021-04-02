@@ -1,4 +1,3 @@
-MAJOR = 0
-MINOR = 0
+import globals
 
-print("hippo tools - v{}.{}".format(MAJOR, MINOR))
+print("hippo tools - v{}.{}".format(globals.V_MAJOR, globals.V_MINOR))
