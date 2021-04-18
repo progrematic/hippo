@@ -1,7 +1,7 @@
 import globals
 import os, sys, subprocess
 
-CONFIG = "release"
+CONFIG = "debug"
 ret = 0
 
 if globals.IsWindows():
