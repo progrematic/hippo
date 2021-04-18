@@ -1,7 +1,7 @@
 #include "engine.h"
 #include <iostream>
 
-#include "sdl2/SDL.h"
+#include "SDL2/SDL.h"
 
 namespace hippo
 {

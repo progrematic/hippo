@@ -144,6 +144,11 @@ project "hippoeditor"
         {
             "HIPPO_PLATFORM_MAC"
         }
+        
+        links
+        {
+            "SDL2.framework"
+        }
 
     filter {"system:linux", "configurations:*"}
         defines
