@@ -11,6 +11,11 @@ workspace "hippo"
 tdir = "bin/%{cfg.buildcfg}/%{prj.name}"
 odir = "bin-obj/%{cfg.buildcfg}/%{prj.name}"
 
+-- External Dependencies
+externals = {}
+externals["sdl2"] = "external/sdl2"
+
+
 project "hippo"
     location "hippo"
     kind "StaticLib"
@@ -30,7 +35,8 @@ project "hippo"
     
     sysincludedirs
     {
-        "%{prj.name}/include/hippo"
+        "%{prj.name}/include/hippo",
+        "%{externals.sdl2}/include"
     }
 
     flags
@@ -115,6 +121,17 @@ project "hippoeditor"
         {
             "HIPPO_PLATFORM_WINDOWS"
         }
+
+        libdirs
+        {
+            "%{externals.sdl2}/lib"
+        }
+
+        links
+        {
+            "SDL2"
+        }
+
 
     filter {"system:macosx", "configurations:*"}
         xcodebuildsettings

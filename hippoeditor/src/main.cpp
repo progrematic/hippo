@@ -5,8 +5,12 @@ int main()
 {
     std::cout << "Hello, Youtube!" << std::endl;
     hippo::GetInfo();
-    int a = hippo::Add(10, 5);
-    int b = hippo::Sub(10, 5);
-    std::cout << a << ", " << b << std::endl;
+
+    hippo::Initialize();
+    hippo::Shutdown();
+
+#ifdef HIPPO_PLATFORM_WINDOWS
+    system("pause");
+#endif
     return 0;
 }
