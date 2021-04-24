@@ -13,6 +13,7 @@ odir = "bin-obj/%{cfg.buildcfg}/%{prj.name}"
 
 -- External Dependencies
 externals = {}
+externals["maclibs"] = "external/maclibs"
 externals["sdl2"] = "external/sdl2"
 
 
@@ -144,6 +145,9 @@ project "hippoeditor"
         {
             "HIPPO_PLATFORM_MAC"
         }
+
+        abspath = path.getabsolute("%{externals.maclibs}")
+        linkoptions {"-F " .. abspath}
         
         links
         {
