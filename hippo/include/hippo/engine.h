@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/window.h"
+#include "managers/logmanager.h"
 
 namespace hippo
 {
@@ -20,7 +21,11 @@ namespace hippo
 
     private:
         bool mIsRunning;
+        bool mIsInitialized;
         core::Window mWindow;
+
+        // Managers
+        managers::LogManager mLogManager;
 
         // Singleton
         Engine();

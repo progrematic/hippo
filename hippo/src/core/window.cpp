@@ -1,8 +1,8 @@
 #include "core/window.h"
 #include "engine.h"
+#include "log.h"
 
 #include "SDL2/SDL.h"
-#include <iostream>
 
 namespace hippo::core
 {
@@ -20,7 +20,7 @@ namespace hippo::core
 		mWindow = SDL_CreateWindow("HippoGame", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, 0);
 		if (!mWindow)
 		{
-			std::cout << "Error creating window: " << SDL_GetError() << std::endl;
+			HIPPO_ERROR("Error creating window: {}", SDL_GetError());
 			return false;
 		}
 

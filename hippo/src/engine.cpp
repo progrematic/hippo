@@ -1,5 +1,5 @@
 #include "engine.h"
-#include <iostream>
+#include "log.h"
 
 #include "SDL2/SDL.h"
 
@@ -37,27 +37,35 @@ namespace hippo
 	{
 		bool ret = false;
 
-		if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
+		HIPPO_ASSERT(!mIsInitialized, "Attempting to call Engine::Initialize() more than once!");
+		if (!mIsInitialized)
 		{
-			std::cout << "Error initializing SDL2: " << SDL_GetError() << std::endl;
-		}
-		else
-		{
-			SDL_version version;
-			SDL_VERSION(&version);
-			std::cout << "SDL " << (int32_t)version.major << "." << (int32_t)version.minor << "." << (int32_t)version.patch << std::endl;
+			mLogManager.Initialize();
+			GetInfo();
 
-			if (mWindow.Create())
+			if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 			{
-				ret = true;
-				mIsRunning = true;
+				HIPPO_ERROR("Error initializing SDL2: {}", SDL_GetError());
 			}
-		}
+			else
+			{
+				SDL_version version;
+				SDL_VERSION(&version);
+				HIPPO_INFO("SDL {}.{}.{}", (int32_t)version.major, (int32_t)version.minor, (int32_t)version.patch);
 
-		if (!ret)
-		{
-			std::cout << "Engine initialization failed. Shutting down." << std::endl;
-			Shutdown();
+				if (mWindow.Create())
+				{
+					ret = true;
+					mIsRunning = true;
+					mIsInitialized = true;
+				}
+			}
+
+			if (!ret)
+			{
+				HIPPO_ERROR("Engine initialization failed. Shutting down.");
+				Shutdown();
+			}
 		}
 
 		return ret;
@@ -66,35 +74,41 @@ namespace hippo
 	void Engine::Shutdown()
 	{
 		mIsRunning = false;
+		mIsInitialized = false;
+
+		// Managers - usually in reverse order
+		mLogManager.Shutdown();
+
+		// Shutdown SDL
 		mWindow.Shutdown();
 		SDL_Quit();
 	}
 
     void Engine::GetInfo()
     {
+		HIPPO_TRACE("HippoEngine v{}.{}", 0, 1);
 #ifdef HIPPO_CONFIG_DEBUG
-        std::cout << "Configuration: DEBUG" << std::endl;
+		HIPPO_DEBUG("Configuration: DEBUG");
 #endif
 #ifdef HIPPO_CONFIG_RELEASE
-        std::cout << "Configuration: RELEASE" << std::endl;
+		HIPPO_DEBUG("Configuration: RELEASE");
 #endif
 #ifdef HIPPO_PLATFORM_WINDOWS
-        std::cout << "Platform: WINDOWS" << std::endl;
+		HIPPO_WARN("Platform: WINDOWS");
 #endif
 #ifdef HIPPO_PLATFORM_LINUX
-        std::cout << "Platform: LINUX" << std::endl;
+		HIPPO_WARN("Platform: LINUX");
 #endif
 #ifdef HIPPO_PLATFORM_MAC
-        std::cout << "Platform: MAC" << std::endl;
+		HIPPO_WARN("Platform: MAC");
 #endif
     }
 
 	// singleton
 	Engine* Engine::mInstance = nullptr;
 
-	Engine::Engine()
+	Engine::Engine() 
 		: mIsRunning(false)
-	{
-		GetInfo();
-	}
+		, mIsInitialized(false)
+	{}
 }
