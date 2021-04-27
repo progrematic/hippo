@@ -5,7 +5,72 @@
 
 namespace hippo
 {
-    void GetInfo()
+	Engine& Engine::Instance()
+	{
+		if (!mInstance)
+		{
+			mInstance = new Engine();
+		}
+
+		return *mInstance;
+	}
+
+	void Engine::Run()
+	{
+		if (Initialize())
+		{
+			// core loop
+			while (mIsRunning)
+			{
+				mWindow.PumpEvents();
+			}
+
+			Shutdown();
+		}
+	}
+
+
+
+	// private
+
+	bool Engine::Initialize()
+	{
+		bool ret = false;
+
+		if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
+		{
+			std::cout << "Error initializing SDL2: " << SDL_GetError() << std::endl;
+		}
+		else
+		{
+			SDL_version version;
+			SDL_VERSION(&version);
+			std::cout << "SDL " << (int32_t)version.major << "." << (int32_t)version.minor << "." << (int32_t)version.patch << std::endl;
+
+			if (mWindow.Create())
+			{
+				ret = true;
+				mIsRunning = true;
+			}
+		}
+
+		if (!ret)
+		{
+			std::cout << "Engine initialization failed. Shutting down." << std::endl;
+			Shutdown();
+		}
+
+		return ret;
+	}
+
+	void Engine::Shutdown()
+	{
+		mIsRunning = false;
+		mWindow.Shutdown();
+		SDL_Quit();
+	}
+
+    void Engine::GetInfo()
     {
 #ifdef HIPPO_CONFIG_DEBUG
         std::cout << "Configuration: DEBUG" << std::endl;
@@ -24,27 +89,12 @@ namespace hippo
 #endif
     }
 
-    bool Initialize()
-    {
-        bool ret = true;
+	// singleton
+	Engine* Engine::mInstance = nullptr;
 
-        if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
-        {
-            std::cout << "Error initializing SDL2: " << SDL_GetError() << std::endl;
-            ret = false;
-        }
-        else
-        {
-            SDL_version version;
-            SDL_VERSION(&version);
-            std::cout << "SDL " << (int32_t)version.major << "." << (int32_t)version.minor << "." << (int32_t)version.patch << std::endl;
-        }
-
-        return ret;
-    }
-
-    void Shutdown()
-    {
-        SDL_Quit();
-    }
+	Engine::Engine()
+		: mIsRunning(false)
+	{
+		GetInfo();
+	}
 }
