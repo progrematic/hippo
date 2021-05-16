@@ -16,7 +16,10 @@ externals = {}
 externals["maclibs"] = "external/maclibs"
 externals["sdl2"] = "external/sdl2"
 externals["spdlog"] = "external/spdlog"
+externals["glad"] = "external/glad"
 
+-- Process Glad before anything else
+include "external/glad"
 
 project "hippo"
     location "hippo"
@@ -39,12 +42,18 @@ project "hippo"
     {
         "%{prj.name}/include/hippo",
         "%{externals.sdl2}/include",
-        "%{externals.spdlog}/include"
+        "%{externals.spdlog}/include",
+        "%{externals.glad}/include"
     }
 
     flags
     {
         "FatalWarnings"
+    }
+
+    defines
+    {
+        "GLFW_INCLUDE_NONE" -- Ensures glad doesn't include glfw
     }
 
     filter {"system:windows", "configurations:*"}
@@ -132,7 +141,8 @@ project "hippoeditor"
 
         links
         {
-            "SDL2"
+            "SDL2",
+            "glad"
         }
 
 
@@ -153,7 +163,8 @@ project "hippoeditor"
         
         links
         {
-            "SDL2.framework"
+            "SDL2.framework",
+            "glad"
         }
 
     filter {"system:linux", "configurations:*"}
@@ -164,7 +175,8 @@ project "hippoeditor"
 
         links
         {
-            "SDL2"
+            "SDL2",
+            "glad"
         }
     
     filter "configurations:Debug"

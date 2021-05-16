@@ -23,6 +23,9 @@ namespace hippo
 			while (mIsRunning)
 			{
 				mWindow.PumpEvents();
+
+				mWindow.BeginRender();
+				mWindow.EndRender();
 			}
 
 			Shutdown();
