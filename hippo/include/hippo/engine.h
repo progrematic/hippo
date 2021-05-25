@@ -2,6 +2,7 @@
 
 #include "core/window.h"
 #include "managers/logmanager.h"
+#include "managers/rendermanager.h"
 
 namespace hippo
 {
@@ -13,6 +14,9 @@ namespace hippo
 
         void Run();
         inline void Quit() { mIsRunning = false; }
+
+        // Managers
+        inline managers::RenderManager& GetRenderManager() { return mRenderManager; }
 
 	private:
 		void GetInfo();
@@ -26,6 +30,7 @@ namespace hippo
 
         // Managers
         managers::LogManager mLogManager;
+        managers::RenderManager mRenderManager;
 
         // Singleton
         Engine();
