@@ -1,8 +1,8 @@
-#include "engine.h"
-#include "log.h"
+#include "hippo/engine.h"
+#include "hippo/log.h"
 
-#include "graphics/mesh.h"
-#include "graphics/shader.h"
+#include "hippo/graphics/mesh.h"
+#include "hippo/graphics/shader.h"
 
 #include "SDL2/SDL.h"
 
@@ -63,7 +63,7 @@ namespace hippo
 			std::shared_ptr<graphics::Shader> shader = std::make_shared<graphics::Shader>(vertexShader, fragmentShader);
 			shader->SetUniformFloat3("color", 1, 0, 0);
 
-			mRenderManager.SetWireframeMode(true);
+			//mRenderManager.SetWireframeMode(true);
 			// core loop
 			while (mIsRunning)
 			{

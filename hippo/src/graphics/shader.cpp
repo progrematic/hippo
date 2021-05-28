@@ -1,6 +1,6 @@
-#include "graphics/shader.h"
-#include "graphics/helpers.h"
-#include "log.h"
+#include "hippo/graphics/shader.h"
+#include "hippo/graphics/helpers.h"
+#include "hippo/log.h"
 
 #include "glad/glad.h"
 

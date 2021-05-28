@@ -1,6 +1,6 @@
 #pragma once
 
-#include "log.h"
+#include "hippo/log.h"
 
 #include "glad/glad.h"
 #include <string>

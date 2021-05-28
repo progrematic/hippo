@@ -1,6 +1,6 @@
-#include "core/window.h"
-#include "engine.h"
-#include "log.h"
+#include "hippo/core/window.h"
+#include "hippo/engine.h"
+#include "hippo/log.h"
 
 #include "SDL2/SDL.h"
 #include "glad/glad.h"

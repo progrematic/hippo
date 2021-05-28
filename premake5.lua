@@ -40,7 +40,7 @@ project "hippo"
     
     sysincludedirs
     {
-        "%{prj.name}/include/hippo",
+        "%{prj.name}/include",
         "%{externals.sdl2}/include",
         "%{externals.spdlog}/include",
         "%{externals.glad}/include"

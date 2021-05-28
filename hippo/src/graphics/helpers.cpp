@@ -1,4 +1,4 @@
-#include "graphics/helpers.h"
+#include "hippo/graphics/helpers.h"
 
 namespace hippo::graphics
 {

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/window.h"
-#include "managers/logmanager.h"
-#include "managers/rendermanager.h"
+#include "hippo/core/window.h"
+#include "hippo/managers/logmanager.h"
+#include "hippo/managers/rendermanager.h"
 
 namespace hippo
 {

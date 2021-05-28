@@ -1,6 +1,6 @@
-#include "managers/logmanager.h"
+#include "hippo/managers/logmanager.h"
+#include "hippo/log.h"
 
-#include "log.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 
 #include <memory>

@@ -1,9 +1,9 @@
-#include "graphics/rendercommands.h"
-#include "graphics/helpers.h"
-#include "log.h"
+#include "hippo/graphics/rendercommands.h"
+#include "hippo/graphics/helpers.h"
+#include "hippo/log.h"
 
-#include "graphics/mesh.h"
-#include "graphics/shader.h"
+#include "hippo/graphics/mesh.h"
+#include "hippo/graphics/shader.h"
 
 #include "glad/glad.h"
 

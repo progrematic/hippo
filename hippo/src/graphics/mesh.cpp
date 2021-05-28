@@ -1,8 +1,7 @@
-#include "graphics/mesh.h"
+#include "hippo/graphics/mesh.h"
+#include "hippo/graphics/helpers.h"
 
-#include "graphics/helpers.h"
 #include "glad/glad.h"
-
 
 namespace hippo::graphics
 {
