@@ -176,7 +176,8 @@ project "hippoeditor"
         links
         {
             "SDL2",
-            "glad"
+            "glad",
+            "dl"
         }
     
     filter "configurations:Debug"
