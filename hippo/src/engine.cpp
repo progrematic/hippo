@@ -22,60 +22,62 @@ namespace hippo
 	{
 		if (Initialize())
 		{
-			// Test Mesh
-			float vertices[]
 			{
-				 0.5f,  0.5f, 0.f,
-				 0.5f, -0.5f, 0.f,
-				-0.5f, -0.5f, 0.f,
-				-0.5f,  0.5f, 0.f
-			};
-			uint32_t elements[]
-			{
-				0, 3, 1,
-				1, 3, 2
-			};
-			std::shared_ptr<graphics::Mesh> mesh = std::make_shared<graphics::Mesh>(&vertices[0], 4, 3, &elements[0], 6);
-
-			// Test Shader
-			const char* vertexShader = R"(
-				#version 410 core
-				layout (location = 0) in vec3 position;
-				out vec3 vpos;
-				void main()
+				// Test Mesh
+				float vertices[]
 				{
-					vpos = position + vec3(0.5, 0.5, 0);
-					gl_Position = vec4(position, 1.0);
-				}
-			)";
-
-			const char* fragmentShader = R"(
-				#version 410 core
-				out vec4 outColor;
-				in vec3 vpos;
-
-				uniform vec3 color = vec3(0.0);
-				void main()
+					 0.5f,  0.5f, 0.f,
+					 0.5f, -0.5f, 0.f,
+					-0.5f, -0.5f, 0.f,
+					-0.5f,  0.5f, 0.f
+				};
+				uint32_t elements[]
 				{
-					outColor = vec4(vpos, 1.0);
+					0, 3, 1,
+					1, 3, 2
+				};
+				std::shared_ptr<graphics::Mesh> mesh = std::make_shared<graphics::Mesh>(&vertices[0], 4, 3, &elements[0], 6);
+
+				// Test Shader
+				const char* vertexShader = R"(
+					#version 410 core
+					layout (location = 0) in vec3 position;
+					out vec3 vpos;
+					void main()
+					{
+						vpos = position + vec3(0.5, 0.5, 0);
+						gl_Position = vec4(position, 1.0);
+					}
+				)";
+
+				const char* fragmentShader = R"(
+					#version 410 core
+					out vec4 outColor;
+					in vec3 vpos;
+
+					uniform vec3 color = vec3(0.0);
+					void main()
+					{
+						outColor = vec4(vpos, 1.0);
+					}
+				)";
+				std::shared_ptr<graphics::Shader> shader = std::make_shared<graphics::Shader>(vertexShader, fragmentShader);
+				shader->SetUniformFloat3("color", 1, 0, 0);
+
+				//mRenderManager.SetWireframeMode(true);
+				// core loop
+				while (mIsRunning)
+				{
+					mWindow.PumpEvents();
+
+					mWindow.BeginRender();
+
+					auto rc = std::make_unique<graphics::rendercommands::RenderMesh>(mesh, shader);
+					mRenderManager.Submit(std::move(rc));
+					mRenderManager.Flush();
+
+					mWindow.EndRender();
 				}
-			)";
-			std::shared_ptr<graphics::Shader> shader = std::make_shared<graphics::Shader>(vertexShader, fragmentShader);
-			shader->SetUniformFloat3("color", 1, 0, 0);
-
-			//mRenderManager.SetWireframeMode(true);
-			// core loop
-			while (mIsRunning)
-			{
-				mWindow.PumpEvents();
-
-				mWindow.BeginRender();
-
-				auto rc = std::make_unique<graphics::rendercommands::RenderMesh>(mesh, shader);
-				mRenderManager.Submit(std::move(rc));
-				mRenderManager.Flush();
-
-				mWindow.EndRender();
 			}
 
 			Shutdown();
@@ -134,11 +136,12 @@ namespace hippo
 
 		// Shutdown Managers - usually in reverse order
 		mRenderManager.Shutdown();
-		mLogManager.Shutdown();
 
 		// Shutdown SDL
 		mWindow.Shutdown();
 		SDL_Quit();
+
+		mLogManager.Shutdown();
 	}
 
     void Engine::GetInfo()

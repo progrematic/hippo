@@ -50,6 +50,7 @@ namespace hippo::core
 	void Window::Shutdown()
 	{
 		SDL_DestroyWindow(mWindow);
+		SDL_GL_DeleteContext(mGLContext);
 		mWindow = nullptr;
 	}
 

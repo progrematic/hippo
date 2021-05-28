@@ -5,7 +5,6 @@ namespace hippo::graphics
 	void CheckGLError()
 	{
 		GLenum error = glGetError();
-		bool shouldAssert = error != GL_NO_ERROR;
 		while (error != GL_NO_ERROR)
 		{
 			std::string errorstr;
@@ -20,8 +19,9 @@ namespace hippo::graphics
 			}
 
 			HIPPO_ERROR("OpenGL Error: {}", errorstr.c_str());
+			HIPPO_ASSERT(false, "OpenGL Error!");
+
 			error = glGetError();
 		}
-		HIPPO_ASSERT(!shouldAssert, "OpenGL Error!");
 	}
 }
