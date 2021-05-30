@@ -2,6 +2,9 @@
 #include "hippo/engine.h"
 #include "hippo/log.h"
 
+#include "hippo/input/mouse.h"
+#include "hippo/input/keyboard.h"
+
 #include "SDL2/SDL.h"
 #include "glad/glad.h"
 
@@ -69,6 +72,10 @@ namespace hippo::core
 				break;
 			}
 		}
+
+		// Update input
+		input::Mouse::Update();
+		input::Keyboard::Update();
 	}
 
 	void Window::BeginRender()
@@ -80,4 +87,10 @@ namespace hippo::core
 	{
 		SDL_GL_SwapWindow(mWindow);
 	}
+
+	void Window::GetSize(int& w, int& h)
+	{
+		SDL_GetWindowSize(mWindow, &w, &h);
+	}
+
 }

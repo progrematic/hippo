@@ -4,6 +4,9 @@
 #include "hippo/graphics/mesh.h"
 #include "hippo/graphics/shader.h"
 
+#include "hippo/input/mouse.h"
+#include "hippo/input/keyboard.h"
+
 #include "SDL2/SDL.h"
 
 namespace hippo
@@ -43,9 +46,10 @@ namespace hippo
 					#version 410 core
 					layout (location = 0) in vec3 position;
 					out vec3 vpos;
+					uniform vec2 offset = vec2(0.5);
 					void main()
 					{
-						vpos = position + vec3(0.5, 0.5, 0);
+						vpos = position + vec3(offset, 0);
 						gl_Position = vec4(position, 1.0);
 					}
 				)";
@@ -64,11 +68,32 @@ namespace hippo
 				std::shared_ptr<graphics::Shader> shader = std::make_shared<graphics::Shader>(vertexShader, fragmentShader);
 				shader->SetUniformFloat3("color", 1, 0, 0);
 
-				//mRenderManager.SetWireframeMode(true);
+				float xKeyOffset = 0.f;
+				float yKeyOffset = 0.f;
+				float keySpeed = 0.001f;
+				
 				// core loop
 				while (mIsRunning)
 				{
 					mWindow.PumpEvents();
+
+					int windowW = 0;
+					int windowH = 0;
+					GetWindow().GetSize(windowW, windowH);
+
+					float xNorm = (float)input::Mouse::X() / (float)windowW;
+					float yNorm = (float)(windowH - input::Mouse::Y()) / (float)windowH;
+
+					if (input::Keyboard::Key(HIPPO_INPUT_KEY_LEFT))	{ xKeyOffset -= keySpeed; }
+					if (input::Keyboard::Key(HIPPO_INPUT_KEY_RIGHT)){ xKeyOffset += keySpeed; }
+					if (input::Keyboard::Key(HIPPO_INPUT_KEY_UP))	{ yKeyOffset += keySpeed; }
+					if (input::Keyboard::Key(HIPPO_INPUT_KEY_DOWN)) { yKeyOffset -= keySpeed; }
+
+					if (input::Keyboard::KeyDown(HIPPO_INPUT_KEY_LEFT)) { xKeyOffset -= keySpeed * 100; }
+					if (input::Keyboard::KeyDown(HIPPO_INPUT_KEY_RIGHT)) { xKeyOffset += keySpeed * 100; }
+
+
+					shader->SetUniformFloat2("offset", xNorm + xKeyOffset, yNorm + yKeyOffset);
 
 					mWindow.BeginRender();
 
@@ -116,6 +141,10 @@ namespace hippo
 					ret = true;
 					mIsRunning = true;
 					mIsInitialized = true;
+
+					// Initialize input
+					input::Mouse::Initialize();
+					input::Keyboard::Initialize();
 				}
 			}
 

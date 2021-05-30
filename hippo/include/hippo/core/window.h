@@ -15,6 +15,8 @@ namespace hippo::core
 
 		void PumpEvents();
 
+		void GetSize(int& w, int& h);
+
 		void BeginRender();
 		void EndRender();
 
