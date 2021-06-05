@@ -6,6 +6,7 @@
 
 #include "hippo/input/mouse.h"
 #include "hippo/input/keyboard.h"
+#include "hippo/input/joystick.h"
 
 #include "SDL2/SDL.h"
 
@@ -60,9 +61,10 @@ namespace hippo
 					in vec3 vpos;
 
 					uniform vec3 color = vec3(0.0);
+					uniform float blue = 0.5f;
 					void main()
 					{
-						outColor = vec4(vpos, 1.0);
+						outColor = vec4(vpos.xy, blue, 1.0);
 					}
 				)";
 				std::shared_ptr<graphics::Shader> shader = std::make_shared<graphics::Shader>(vertexShader, fragmentShader);
@@ -92,6 +94,16 @@ namespace hippo
 					if (input::Keyboard::KeyDown(HIPPO_INPUT_KEY_LEFT)) { xKeyOffset -= keySpeed * 100; }
 					if (input::Keyboard::KeyDown(HIPPO_INPUT_KEY_RIGHT)) { xKeyOffset += keySpeed * 100; }
 
+					if (input::Joystick::IsJoystickAvailable(0))
+					{
+						if (input::Joystick::GetButton(0, input::Joystick::Button::DPAD_Left))  { xKeyOffset -= keySpeed; }
+						if (input::Joystick::GetButton(0, input::Joystick::Button::DPAD_Right)) { xKeyOffset += keySpeed; }
+						if (input::Joystick::GetButton(0, input::Joystick::Button::DPAD_Up))	{ yKeyOffset += keySpeed; }
+						if (input::Joystick::GetButton(0, input::Joystick::Button::DPAD_Down))	{ yKeyOffset -= keySpeed; }
+
+						float blue = input::Joystick::GetAxis(0, input::Joystick::Axis::LeftTrigger);
+						shader->SetUniformFloat("blue", blue);
+					}
 
 					shader->SetUniformFloat2("offset", xNorm + xKeyOffset, yNorm + yKeyOffset);
 

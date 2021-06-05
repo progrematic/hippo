@@ -4,6 +4,7 @@
 
 #include "hippo/input/mouse.h"
 #include "hippo/input/keyboard.h"
+#include "hippo/input/joystick.h"
 
 #include "SDL2/SDL.h"
 #include "glad/glad.h"
@@ -68,6 +69,14 @@ namespace hippo::core
 				Engine::Instance().Quit();
 				break;
 
+			case SDL_CONTROLLERDEVICEADDED:
+				input::Joystick::OnJoystickConnected(e.cdevice);
+				break;
+
+			case SDL_CONTROLLERDEVICEREMOVED:
+				input::Joystick::OnJoystickDisconnected(e.cdevice);
+				break;
+
 			default:
 				break;
 			}
@@ -76,6 +85,7 @@ namespace hippo::core
 		// Update input
 		input::Mouse::Update();
 		input::Keyboard::Update();
+		input::Joystick::Update();
 	}
 
 	void Window::BeginRender()
