@@ -1,12 +1,9 @@
 #include "hippo/engine.h"
 #include "hippo/log.h"
-
-#include "hippo/graphics/mesh.h"
-#include "hippo/graphics/shader.h"
+#include "hippo/app.h"
 
 #include "hippo/input/mouse.h"
 #include "hippo/input/keyboard.h"
-#include "hippo/input/joystick.h"
 
 #include "SDL2/SDL.h"
 
@@ -22,99 +19,23 @@ namespace hippo
 		return *mInstance;
 	}
 
-	void Engine::Run()
+	void Engine::Run(App* app)
 	{
+		mLogManager.Initialize();
+		HIPPO_ASSERT(!mApp, "Attempting to call Engine::Run when a valid App already exists");
+		if (mApp)
+		{
+			return;
+		}
+
+		mApp = app;
 		if (Initialize())
 		{
+			// core loop
+			while (mIsRunning)
 			{
-				// Test Mesh
-				float vertices[]
-				{
-					 0.5f,  0.5f, 0.f,
-					 0.5f, -0.5f, 0.f,
-					-0.5f, -0.5f, 0.f,
-					-0.5f,  0.5f, 0.f
-				};
-				uint32_t elements[]
-				{
-					0, 3, 1,
-					1, 3, 2
-				};
-				std::shared_ptr<graphics::Mesh> mesh = std::make_shared<graphics::Mesh>(&vertices[0], 4, 3, &elements[0], 6);
-
-				// Test Shader
-				const char* vertexShader = R"(
-					#version 410 core
-					layout (location = 0) in vec3 position;
-					out vec3 vpos;
-					uniform vec2 offset = vec2(0.5);
-					void main()
-					{
-						vpos = position + vec3(offset, 0);
-						gl_Position = vec4(position, 1.0);
-					}
-				)";
-
-				const char* fragmentShader = R"(
-					#version 410 core
-					out vec4 outColor;
-					in vec3 vpos;
-
-					uniform vec3 color = vec3(0.0);
-					uniform float blue = 0.5f;
-					void main()
-					{
-						outColor = vec4(vpos.xy, blue, 1.0);
-					}
-				)";
-				std::shared_ptr<graphics::Shader> shader = std::make_shared<graphics::Shader>(vertexShader, fragmentShader);
-				shader->SetUniformFloat3("color", 1, 0, 0);
-
-				float xKeyOffset = 0.f;
-				float yKeyOffset = 0.f;
-				float keySpeed = 0.001f;
-				
-				// core loop
-				while (mIsRunning)
-				{
-					mWindow.PumpEvents();
-
-					int windowW = 0;
-					int windowH = 0;
-					GetWindow().GetSize(windowW, windowH);
-
-					float xNorm = (float)input::Mouse::X() / (float)windowW;
-					float yNorm = (float)(windowH - input::Mouse::Y()) / (float)windowH;
-
-					if (input::Keyboard::Key(HIPPO_INPUT_KEY_LEFT))	{ xKeyOffset -= keySpeed; }
-					if (input::Keyboard::Key(HIPPO_INPUT_KEY_RIGHT)){ xKeyOffset += keySpeed; }
-					if (input::Keyboard::Key(HIPPO_INPUT_KEY_UP))	{ yKeyOffset += keySpeed; }
-					if (input::Keyboard::Key(HIPPO_INPUT_KEY_DOWN)) { yKeyOffset -= keySpeed; }
-
-					if (input::Keyboard::KeyDown(HIPPO_INPUT_KEY_LEFT)) { xKeyOffset -= keySpeed * 100; }
-					if (input::Keyboard::KeyDown(HIPPO_INPUT_KEY_RIGHT)) { xKeyOffset += keySpeed * 100; }
-
-					if (input::Joystick::IsJoystickAvailable(0))
-					{
-						if (input::Joystick::GetButton(0, input::Joystick::Button::DPAD_Left))  { xKeyOffset -= keySpeed; }
-						if (input::Joystick::GetButton(0, input::Joystick::Button::DPAD_Right)) { xKeyOffset += keySpeed; }
-						if (input::Joystick::GetButton(0, input::Joystick::Button::DPAD_Up))	{ yKeyOffset += keySpeed; }
-						if (input::Joystick::GetButton(0, input::Joystick::Button::DPAD_Down))	{ yKeyOffset -= keySpeed; }
-
-						float blue = input::Joystick::GetAxis(0, input::Joystick::Axis::LeftTrigger);
-						shader->SetUniformFloat("blue", blue);
-					}
-
-					shader->SetUniformFloat2("offset", xNorm + xKeyOffset, yNorm + yKeyOffset);
-
-					mWindow.BeginRender();
-
-					auto rc = std::make_unique<graphics::rendercommands::RenderMesh>(mesh, shader);
-					mRenderManager.Submit(std::move(rc));
-					mRenderManager.Flush();
-
-					mWindow.EndRender();
-				}
+				Update();
+				Render();
 			}
 
 			Shutdown();
@@ -132,7 +53,6 @@ namespace hippo
 		HIPPO_ASSERT(!mIsInitialized, "Attempting to call Engine::Initialize() more than once!");
 		if (!mIsInitialized)
 		{
-			mLogManager.Initialize();
 			GetInfo();
 
 			if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
@@ -157,6 +77,9 @@ namespace hippo
 					// Initialize input
 					input::Mouse::Initialize();
 					input::Keyboard::Initialize();
+
+					// Initialize Client
+					mApp->Initialize();
 				}
 			}
 
@@ -175,6 +98,9 @@ namespace hippo
 		mIsRunning = false;
 		mIsInitialized = false;
 
+		// Shutdown client
+		mApp->Shutdown();
+
 		// Shutdown Managers - usually in reverse order
 		mRenderManager.Shutdown();
 
@@ -183,6 +109,19 @@ namespace hippo
 		SDL_Quit();
 
 		mLogManager.Shutdown();
+	}
+
+	void Engine::Update()
+	{
+		mWindow.PumpEvents();
+		mApp->Update();
+	}
+
+	void Engine::Render()
+	{
+		mWindow.BeginRender();
+		mApp->Render();
+		mWindow.EndRender();
 	}
 
     void Engine::GetInfo()
@@ -211,5 +150,6 @@ namespace hippo
 	Engine::Engine() 
 		: mIsRunning(false)
 		, mIsInitialized(false)
+		, mApp(nullptr)
 	{}
 }

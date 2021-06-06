@@ -6,13 +6,14 @@
 
 namespace hippo
 {
+    class App;
     class Engine
     {
     public:
         static Engine& Instance();
         ~Engine() {}
 
-        void Run();
+        void Run(App* app);
         inline void Quit() { mIsRunning = false; }
 
         inline core::Window& GetWindow() { return mWindow; }
@@ -24,11 +25,14 @@ namespace hippo
 		void GetInfo();
 		[[nodiscard]] bool Initialize();
 		void Shutdown();
+        void Update();
+        void Render();
 
     private:
         bool mIsRunning;
         bool mIsInitialized;
         core::Window mWindow;
+        App* mApp;
 
         // Managers
         managers::LogManager mLogManager;

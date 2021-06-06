@@ -118,7 +118,8 @@ project "hippoeditor"
     
     sysincludedirs
     {
-        "hippo/include"
+        "hippo/include",
+        "%{externals.spdlog}/include"
     }
 
     flags
