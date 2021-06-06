@@ -1,6 +1,8 @@
 #include "hippo/managers/rendermanager.h"
 #include "hippo/graphics/helpers.h"
+#include "hippo/graphics/framebuffer.h"
 #include "hippo/log.h"
+#include "hippo/engine.h"
 
 #include "glad/glad.h"
 
@@ -34,6 +36,11 @@ namespace hippo::managers
 		{
 			mRenderCommands.pop();
 		}
+	}
+
+	void RenderManager::SetViewport(int x, int y, int w, int h)
+	{
+		glViewport(x, y, w, h); HIPPO_CHECK_GL_ERROR;
 	}
 
 	void RenderManager::SetClearColour(float r, float g, float b, float a)
@@ -76,6 +83,45 @@ namespace hippo::managers
 		else
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); HIPPO_CHECK_GL_ERROR;
+		}
+	}
+
+	void RenderManager::PushFramebuffer(std::shared_ptr<graphics::Framebuffer> framebuffer)
+	{
+		mFramebuffers.push(framebuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->GetFbo()); HIPPO_CHECK_GL_ERROR;
+		uint32_t w, h;
+		framebuffer->GetSize(w, h);
+		SetViewport(0, 0, w, h);
+
+		float r, g, b, a;
+		framebuffer->GetClearColour(r, g, b, a);
+		glClearColor(r, g, b, a); HIPPO_CHECK_GL_ERROR;
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); HIPPO_CHECK_GL_ERROR;
+	}
+
+	void RenderManager::PopFramebuffer()
+	{
+		HIPPO_ASSERT(mFramebuffers.size() > 0, "RenderManager::PopFramebuffer - empty stack");
+		if (mFramebuffers.size() > 0)
+		{
+			mFramebuffers.pop();
+			if (mFramebuffers.size() > 0)
+			{
+				auto nextfb = mFramebuffers.top();
+				glBindFramebuffer(GL_FRAMEBUFFER, nextfb->GetFbo()); HIPPO_CHECK_GL_ERROR;
+				uint32_t w, h;
+				nextfb->GetSize(w, h);
+				SetViewport(0, 0, w, h);
+			}
+			else
+			{
+				glBindFramebuffer(GL_FRAMEBUFFER, 0); HIPPO_CHECK_GL_ERROR;
+				auto& window = Engine::Instance().GetWindow();
+				int w, h;
+				window.GetSize(w, h);
+				SetViewport(0, 0, w, h);
+			}
 		}
 	}
 

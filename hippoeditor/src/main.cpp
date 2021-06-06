@@ -6,6 +6,7 @@
 
 #include "hippo/graphics/mesh.h"
 #include "hippo/graphics/shader.h"
+#include "hippo/graphics/framebuffer.h"
 
 #include "hippo/input/mouse.h"
 #include "hippo/input/keyboard.h"
@@ -119,9 +120,7 @@ public:
 
 	void Render() override
 	{
-		auto rc = std::make_unique<graphics::rendercommands::RenderMesh>(mMesh, mShader);
-		Engine::Instance().GetRenderManager().Submit(std::move(rc));
-		Engine::Instance().GetRenderManager().Flush();
+		Engine::Instance().GetRenderManager().Submit(HIPPO_SUBMIT_RC(RenderMesh, mMesh, mShader));
 	}
 
 	void ImguiRender() override
@@ -138,6 +137,22 @@ public:
 			ImGui::DragFloat("Rect Pos Y", &yKeyOffset, 0.01f);
 		}
 
+		ImGui::End();
+
+		if (ImGui::Begin("GameView"))
+		{
+			if (ImGui::IsWindowHovered())
+			{
+				ImGui::CaptureMouseFromApp(false);
+			}
+
+			auto& window = Engine::Instance().GetWindow();
+
+			ImVec2 size = { 480, 320 };
+			ImVec2 uv0 = { 0, 1 };
+			ImVec2 uv1 = { 1, 0 };
+			ImGui::Image((void*)(intptr_t)window.GetFramebuffer()->GetTextureId(), size, uv0, uv1);
+		}
 		ImGui::End();
 	}
 };

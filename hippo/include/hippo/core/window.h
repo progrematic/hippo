@@ -3,9 +3,16 @@
 #include "hippo/core/imguiwindow.h"
 
 #include <string>
+#include <memory>
 
 struct SDL_Window;
 using SDL_GLContext = void*;
+
+namespace hippo::graphics
+{
+	class Framebuffer;
+}
+
 namespace hippo::core
 {
 	struct WindowProperties
@@ -33,8 +40,9 @@ namespace hippo::core
 
 		void GetSize(int& w, int& h);
 
-		SDL_Window* GetSDLWindow() { return mWindow; }
-		SDL_GLContext GetGLContext() { return mGLContext; }
+		inline SDL_Window* GetSDLWindow() { return mWindow; }
+		inline SDL_GLContext GetGLContext() { return mGLContext; }
+		inline graphics::Framebuffer* GetFramebuffer() { return mFramebuffer.get(); }
 
 		void BeginRender();
 		void EndRender();
@@ -43,5 +51,6 @@ namespace hippo::core
 		SDL_Window* mWindow;
 		SDL_GLContext mGLContext;
 		ImguiWindow mImguiWindow;
+		std::shared_ptr<graphics::Framebuffer> mFramebuffer;
 	};
 }

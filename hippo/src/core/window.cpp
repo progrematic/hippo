@@ -3,6 +3,8 @@
 #include "hippo/log.h"
 #include "hippo/app.h"
 
+#include "hippo/graphics/framebuffer.h"
+
 #include "hippo/input/mouse.h"
 #include "hippo/input/keyboard.h"
 #include "hippo/input/joystick.h"
@@ -52,6 +54,7 @@ namespace hippo::core
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
 		SDL_SetWindowMinimumSize(mWindow, props.wMin, props.hMin);
 
@@ -64,7 +67,8 @@ namespace hippo::core
 
 		gladLoadGLLoader(SDL_GL_GetProcAddress);
 
-		Engine::Instance().GetRenderManager().SetClearColour(props.ccR, props.ccG, props.ccB, 1.f);
+		mFramebuffer = std::make_shared<graphics::Framebuffer>(props.w, props.h);
+		mFramebuffer->SetClearColour(props.ccR, props.ccG, props.ccB, 1.f);
 
 		mImguiWindow.Create(props.imguiProps);
 		return true;
@@ -115,11 +119,17 @@ namespace hippo::core
 
 	void Window::BeginRender()
 	{
-		Engine::Instance().GetRenderManager().Clear();
+		auto& rm = Engine::Instance().GetRenderManager();
+		rm.Clear();
+		rm.Submit(HIPPO_SUBMIT_RC(PushFramebuffer, mFramebuffer));
 	}
 
 	void Window::EndRender()
 	{
+		auto& rm = Engine::Instance().GetRenderManager();
+		rm.Submit(HIPPO_SUBMIT_RC(PopFramebuffer));
+		rm.Flush();
+
 		mImguiWindow.BeginRender();
 		Engine::Instance().GetApp().ImguiRender();
 		mImguiWindow.EndRender();
