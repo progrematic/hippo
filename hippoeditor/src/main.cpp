@@ -11,6 +11,8 @@
 #include "hippo/input/keyboard.h"
 #include "hippo/input/joystick.h"
 
+#include "external/imgui/imgui.h"
+
 using namespace hippo;
 
 class Editor : public hippo::App
@@ -23,7 +25,17 @@ private:
 	float keySpeed = 0.001f;
 
 public:
-    void Initialize() override
+	core::WindowProperties GetWindowProperties()
+	{
+		core::WindowProperties props;
+		props.title = "HippoEditor";
+		props.w = 800;
+		props.h = 600;
+		props.imguiProps.IsDockingEnabled = true;
+		return props;
+	}
+
+	void Initialize() override
 	{
 		// Test Mesh
 		float vertices[]
@@ -110,6 +122,23 @@ public:
 		auto rc = std::make_unique<graphics::rendercommands::RenderMesh>(mMesh, mShader);
 		Engine::Instance().GetRenderManager().Submit(std::move(rc));
 		Engine::Instance().GetRenderManager().Flush();
+	}
+
+	void ImguiRender() override
+	{
+		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+		if (ImGui::Begin("RectPosX"))
+		{
+			ImGui::DragFloat("Rect Pos X", &xKeyOffset, 0.01f);
+		}
+		ImGui::End();
+
+		if (ImGui::Begin("RectPosY"))
+		{
+			ImGui::DragFloat("Rect Pos Y", &yKeyOffset, 0.01f);
+		}
+
+		ImGui::End();
 	}
 };
 

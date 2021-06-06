@@ -16,6 +16,7 @@ namespace hippo
         void Run(App* app);
         inline void Quit() { mIsRunning = false; }
 
+        inline App& GetApp() { return *mApp; }
         inline core::Window& GetWindow() { return mWindow; }
 
         // Managers

@@ -4,6 +4,7 @@
 
 #include "hippo/input/mouse.h"
 #include "hippo/input/keyboard.h"
+#include "hippo/input/joystick.h"
 
 #include "SDL2/SDL.h"
 
@@ -65,7 +66,8 @@ namespace hippo
 				SDL_VERSION(&version);
 				HIPPO_INFO("SDL {}.{}.{}", (int32_t)version.major, (int32_t)version.minor, (int32_t)version.patch);
 
-				if (mWindow.Create())
+				core::WindowProperties props = mApp->GetWindowProperties();
+				if (mWindow.Create(props))
 				{
 					// Initialize Managers
 					mRenderManager.Initialize();
@@ -100,6 +102,9 @@ namespace hippo
 
 		// Shutdown client
 		mApp->Shutdown();
+
+		// Shutdown Input
+		input::Joystick::Shutdown();
 
 		// Shutdown Managers - usually in reverse order
 		mRenderManager.Shutdown();
