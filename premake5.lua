@@ -34,6 +34,7 @@ project "hippo"
     files
     {
         "%{prj.name}/include/**.h",
+        "%{prj.name}/include/**.hpp",
         "%{prj.name}/include/**.cpp",
         "%{prj.name}/src/**.h",
         "%{prj.name}/src/**.cpp",

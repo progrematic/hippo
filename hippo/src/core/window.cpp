@@ -24,9 +24,10 @@ namespace hippo::core
 		wMin = 320;
 		hMin = 180;
 		flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
-		ccR = static_cast<float>(0x64) / static_cast<float>(0xFF);
-		ccG = static_cast<float>(0x95) / static_cast<float>(0xFF);
-		ccB = static_cast<float>(0xED) / static_cast<float>(0xFF);
+		clearColour = glm::vec3(
+			static_cast<float>(0x64) / static_cast<float>(0xFF),
+			static_cast<float>(0x95) / static_cast<float>(0xFF),
+			static_cast<float>(0xED) / static_cast<float>(0xFF));
 	}
 
 	Window::Window() : mWindow(nullptr) {}
@@ -68,7 +69,8 @@ namespace hippo::core
 		gladLoadGLLoader(SDL_GL_GetProcAddress);
 
 		mFramebuffer = std::make_shared<graphics::Framebuffer>(props.w, props.h);
-		mFramebuffer->SetClearColour(props.ccR, props.ccG, props.ccB, 1.f);
+		glm::vec4 cc{ props.clearColour.r, props.clearColour.g, props.clearColour.b, 1.f };
+		mFramebuffer->SetClearColour(cc);
 
 		mImguiWindow.Create(props.imguiProps);
 		return true;
@@ -137,9 +139,11 @@ namespace hippo::core
 		SDL_GL_SwapWindow(mWindow);
 	}
 
-	void Window::GetSize(int& w, int& h)
+	glm::ivec2 Window::GetSize()
 	{
+		int w, h;
 		SDL_GetWindowSize(mWindow, &w, &h);
+		return glm::ivec2(w, h);
 	}
 
 }

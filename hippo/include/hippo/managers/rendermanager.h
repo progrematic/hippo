@@ -6,6 +6,8 @@
 #include <queue>
 #include <memory>
 
+#include "external/glm/glm.hpp"
+
 #define HIPPO_SUBMIT_RC(type, ...) std::move(std::make_unique<hippo::graphics::rendercommands::type>(__VA_ARGS__))
 
 namespace hippo::managers
@@ -23,8 +25,8 @@ namespace hippo::managers
 		void Shutdown();
 
 		void Clear();
-		void SetViewport(int x, int y, int w, int h);
-		void SetClearColour(float r, float g, float b, float a);
+		void SetViewport(const glm::ivec4 dimensions);
+		void SetClearColour(const glm::vec4 cc);
 		void SetWireframeMode(bool enabled);
 
 		void Submit(std::unique_ptr<graphics::rendercommands::RenderCommand> rc);

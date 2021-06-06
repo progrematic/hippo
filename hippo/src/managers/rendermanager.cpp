@@ -22,11 +22,11 @@ namespace hippo::managers
 		glEnable(GL_BLEND); HIPPO_CHECK_GL_ERROR;
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); HIPPO_CHECK_GL_ERROR;
 
-		SetClearColour(
+		SetClearColour({
 			static_cast<float>(0x64) / static_cast<float>(0xFF),
 			static_cast<float>(0x95) / static_cast<float>(0xFF),
 			static_cast<float>(0xED) / static_cast<float>(0xFF),
-			1
+			1}
 		);	// cornflower blue
 	}
 
@@ -38,14 +38,14 @@ namespace hippo::managers
 		}
 	}
 
-	void RenderManager::SetViewport(int x, int y, int w, int h)
+	void RenderManager::SetViewport(const glm::ivec4 dimensions)
 	{
-		glViewport(x, y, w, h); HIPPO_CHECK_GL_ERROR;
+		glViewport(dimensions.x, dimensions.y, dimensions.z, dimensions.w); HIPPO_CHECK_GL_ERROR;
 	}
 
-	void RenderManager::SetClearColour(float r, float g, float b, float a)
+	void RenderManager::SetClearColour(const glm::vec4 cc)
 	{
-		glClearColor(r, g, b, a); HIPPO_CHECK_GL_ERROR;
+		glClearColor(cc.r, cc.g, cc.b, cc.a); HIPPO_CHECK_GL_ERROR;
 	}
 
 	void RenderManager::Submit(std::unique_ptr<graphics::rendercommands::RenderCommand> rc)
@@ -90,13 +90,10 @@ namespace hippo::managers
 	{
 		mFramebuffers.push(framebuffer);
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->GetFbo()); HIPPO_CHECK_GL_ERROR;
-		uint32_t w, h;
-		framebuffer->GetSize(w, h);
-		SetViewport(0, 0, w, h);
+		SetViewport({ 0, 0, framebuffer->GetSize().x, framebuffer->GetSize().y });
 
-		float r, g, b, a;
-		framebuffer->GetClearColour(r, g, b, a);
-		glClearColor(r, g, b, a); HIPPO_CHECK_GL_ERROR;
+		auto cc = framebuffer->GetClearColour();
+		glClearColor(cc.r, cc.g, cc.b, cc.a); HIPPO_CHECK_GL_ERROR;
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); HIPPO_CHECK_GL_ERROR;
 	}
 
@@ -110,17 +107,13 @@ namespace hippo::managers
 			{
 				auto nextfb = mFramebuffers.top();
 				glBindFramebuffer(GL_FRAMEBUFFER, nextfb->GetFbo()); HIPPO_CHECK_GL_ERROR;
-				uint32_t w, h;
-				nextfb->GetSize(w, h);
-				SetViewport(0, 0, w, h);
+				SetViewport({ 0, 0, nextfb->GetSize().x, nextfb->GetSize().y });
 			}
 			else
 			{
 				glBindFramebuffer(GL_FRAMEBUFFER, 0); HIPPO_CHECK_GL_ERROR;
 				auto& window = Engine::Instance().GetWindow();
-				int w, h;
-				window.GetSize(w, h);
-				SetViewport(0, 0, w, h);
+				SetViewport({ 0, 0, window.GetSize().x, window.GetSize().y });
 			}
 		}
 	}

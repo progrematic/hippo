@@ -5,6 +5,8 @@
 #include <string>
 #include <memory>
 
+#include "external/glm/glm.hpp"
+
 struct SDL_Window;
 using SDL_GLContext = void*;
 
@@ -21,7 +23,7 @@ namespace hippo::core
 		int x, y, w, h;
 		int wMin, hMin;
 		int flags;
-		float ccR, ccG, ccB;
+		glm::vec3 clearColour;
 		ImguiWindowProperties imguiProps;
 
 		WindowProperties();
@@ -38,7 +40,7 @@ namespace hippo::core
 
 		void PumpEvents();
 
-		void GetSize(int& w, int& h);
+		glm::ivec2 GetSize();
 
 		inline SDL_Window* GetSDLWindow() { return mWindow; }
 		inline SDL_GLContext GetGLContext() { return mGLContext; }

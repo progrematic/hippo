@@ -4,6 +4,8 @@
 
 #include "glad/glad.h"
 
+#include "external/glm/gtc/type_ptr.hpp"
+
 namespace hippo::graphics
 {
 	Shader::Shader(const std::string& vertex, const std::string& fragment)
@@ -101,16 +103,43 @@ namespace hippo::graphics
 		glUniform2f(GetUniformLocation(name), val1, val2); HIPPO_CHECK_GL_ERROR;
 	}
 
+	void Shader::SetUniformFloat2(const std::string& name, const glm::vec2& val)
+	{
+		SetUniformFloat2(name, val.x, val.y);
+	}
+
 	void Shader::SetUniformFloat3(const std::string& name, float val1, float val2, float val3)
 	{
 		glUseProgram(mProgramId); HIPPO_CHECK_GL_ERROR;
 		glUniform3f(GetUniformLocation(name), val1, val2, val3); HIPPO_CHECK_GL_ERROR;
 	}
 
+	void Shader::SetUniformFloat3(const std::string& name, const glm::vec3& val)
+	{
+		SetUniformFloat3(name, val.x, val.y, val.z);
+	}
+
 	void Shader::SetUniformFloat4(const std::string& name, float val1, float val2, float val3, float val4)
 	{
 		glUseProgram(mProgramId); HIPPO_CHECK_GL_ERROR;
 		glUniform4f(GetUniformLocation(name), val1, val2, val3, val4); HIPPO_CHECK_GL_ERROR;
+	}
+
+	void Shader::SetUniformFloat4(const std::string& name, const glm::vec4& val)
+	{
+		SetUniformFloat4(name, val.x, val.y, val.z, val.w);
+	}
+
+	void Shader::SetUniformMat3(const std::string& name, const glm::mat3& mat)
+	{
+		glUseProgram(mProgramId); HIPPO_CHECK_GL_ERROR;
+		glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat)); HIPPO_CHECK_GL_ERROR;
+	}
+
+	void Shader::SetUniformMat4(const std::string& name, const glm::mat4& mat)
+	{
+		glUseProgram(mProgramId); HIPPO_CHECK_GL_ERROR;
+		glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat)); HIPPO_CHECK_GL_ERROR;
 	}
 
 	int Shader::GetUniformLocation(const std::string& name)
