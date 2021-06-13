@@ -200,3 +200,102 @@ project "hippoeditor"
         runtime "Release"
         symbols "off"
         optimize "on"
+
+project "PongV1"
+    location "PongV1"
+    kind "ConsoleApp"
+    language "C++"
+    cppdialect "C++17"
+    staticruntime "on"
+    links "hippo"
+
+    targetdir(tdir)
+    objdir(odir)
+
+    files
+    {
+        "%{prj.name}/src/**.h",
+        "%{prj.name}/src/**.cpp"
+    }
+    
+    sysincludedirs
+    {
+        "hippo/include",
+        "%{externals.spdlog}/include"
+    }
+
+    flags
+    {
+        "FatalWarnings"
+    }
+
+    filter {"system:windows", "configurations:*"}
+        systemversion "latest"
+
+        defines
+        {
+            "HIPPO_PLATFORM_WINDOWS"
+        }
+
+        libdirs
+        {
+            "%{externals.sdl2}/lib"
+        }
+
+        links
+        {
+            "SDL2",
+            "glad"
+        }
+
+
+    filter {"system:macosx", "configurations:*"}
+        xcodebuildsettings
+        {
+            ["MACOSX_DEPLOYMENT_TARGET"] = "10.15",
+            ["UseModernBuildSystem"] = "NO"
+        }
+
+        defines
+        {
+            "HIPPO_PLATFORM_MAC"
+        }
+
+        abspath = path.getabsolute("%{externals.maclibs}")
+        linkoptions {"-F " .. abspath}
+        
+        links
+        {
+            "SDL2.framework",
+            "glad"
+        }
+
+    filter {"system:linux", "configurations:*"}
+        defines
+        {
+            "HIPPO_PLATFORM_LINUX"
+        }
+
+        links
+        {
+            "SDL2",
+            "glad",
+            "dl"
+        }
+    
+    filter "configurations:Debug"
+        defines
+        {
+            "HIPPO_CONFIG_DEBUG"
+        }
+        runtime "Debug"
+        symbols "on"
+    
+    filter "configurations:Release"
+        defines
+        {
+            "HIPPO_CONFIG_RELEASE"
+        }
+        runtime "Release"
+        symbols "off"
+        optimize "on"
