@@ -2,7 +2,7 @@
 
 #include "hippo/engine.h"
 
-#include "SDL2/SDl.h"
+#include "SDL2/SDL.h"
 
 #include "external/imgui/imgui.h"
 #include "external/imgui/imgui_impl_sdl.h"
