@@ -31,7 +31,7 @@ private:
 	glm::vec2 mRectPos, mRectSize;
 
 public:
-	core::WindowProperties GetWindowProperties()
+	core::WindowProperties GetWindowProperties() override
 	{
 		core::WindowProperties props;
 		props.title = "HippoEditor";
