@@ -13,3 +13,8 @@ logs/
 *.sln
 *Makefile
 *.pyc
+
+# Allow list
+!premake5.exe
+!*.dll
+!*.lib

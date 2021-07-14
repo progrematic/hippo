@@ -130,6 +130,11 @@ project "hippoeditor"
         "FatalWarnings"
     }
 
+    postbuildcommands
+    {
+        "python3 " .. path.getabsolute("%{prj.name}") .. "/postbuild.py config=%{cfg.buildcfg} prj=%{prj.name}"
+    }
+
     filter {"system:windows", "configurations:*"}
         systemversion "latest"
 
@@ -227,6 +232,11 @@ project "PongV1"
     flags
     {
         "FatalWarnings"
+    }
+
+    postbuildcommands
+    {
+        "python3 " .. path.getabsolute("%{prj.name}") .. "/postbuild.py config=%{cfg.buildcfg} prj=%{prj.name}"
     }
 
     filter {"system:windows", "configurations:*"}

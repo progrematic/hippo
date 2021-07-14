@@ -27,4 +27,5 @@
 #define HIPPO_WARN(...)		(void)0
 #define HIPPO_ERROR(...)	(void)0
 #define HIPPO_FATAL(...)	(void)0
+#define HIPPO_ASSERT(x, msg) (void)0
 #endif
