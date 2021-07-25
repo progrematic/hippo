@@ -9,6 +9,7 @@ namespace hippo::graphics
 	public:
 		Mesh(float* vertexArray, uint32_t vertexCount, uint32_t dimensions);
 		Mesh(float* vertexArray, uint32_t vertexCount, uint32_t dimensions, uint32_t* elementArray, uint32_t elementCount);
+		Mesh(float* vertexArray, uint32_t vertexCount, uint32_t dimensions, float* texCoords, uint32_t* elementArray, uint32_t elementCount);
 		~Mesh();
 
 		void Bind();
@@ -21,5 +22,6 @@ namespace hippo::graphics
 		uint32_t mVertexCount, mElementCount;
 		uint32_t mVao, mEbo;
 		uint32_t mPositionVbo;
+		uint32_t mTexCoordsVbo;
 	};
 }

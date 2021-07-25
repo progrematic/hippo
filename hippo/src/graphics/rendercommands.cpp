@@ -5,6 +5,7 @@
 
 #include "hippo/graphics/mesh.h"
 #include "hippo/graphics/shader.h"
+#include "hippo/graphics/texture.h"
 #include "hippo/graphics/framebuffer.h"
 
 #include "glad/glad.h"
@@ -38,6 +39,36 @@ namespace hippo::graphics::rendercommands
 		}
 	}
 
+	void RenderMeshTextured::Execute()
+	{
+		std::shared_ptr<Mesh> mesh = mMesh.lock();
+		std::shared_ptr<Texture> texture = mTexture.lock();
+		std::shared_ptr<Shader> shader = mShader.lock();
+		if (mesh && texture && shader)
+		{
+			mesh->Bind();
+			texture->Bind();
+			shader->Bind();
+
+			if (mesh->GetElementCount() > 0)
+			{
+				glDrawElements(GL_TRIANGLES, mesh->GetElementCount(), GL_UNSIGNED_INT, 0);
+			}
+			else
+			{
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, mesh->GetVertexCount()); HIPPO_CHECK_GL_ERROR;
+			}
+
+			shader->Unbind();
+			texture->Unbind();
+			mesh->Unbind();
+		}
+		else
+		{
+			HIPPO_WARN("Attempting to execute RenderMesh with invalid data");
+		}
+	}
+
 	void PushFramebuffer::Execute()
 	{
 		std::shared_ptr<Framebuffer> fb = mFramebuffer.lock();
@@ -55,4 +86,5 @@ namespace hippo::graphics::rendercommands
 	{
 		Engine::Instance().GetRenderManager().PopFramebuffer();
 	}
+
 }

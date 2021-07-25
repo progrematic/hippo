@@ -7,6 +7,7 @@
 #include "hippo/graphics/mesh.h"
 #include "hippo/graphics/shader.h"
 #include "hippo/graphics/framebuffer.h"
+#include "hippo/graphics/texture.h"
 
 #include "hippo/input/mouse.h"
 #include "hippo/input/keyboard.h"
@@ -24,6 +25,7 @@ class Editor : public hippo::App
 private:
 	std::shared_ptr<graphics::Mesh> mMesh;
 	std::shared_ptr<graphics::Shader> mShader;
+	std::shared_ptr<graphics::Texture> mTexture;
 	float xKeyOffset = 0.f;
 	float yKeyOffset = 0.f;
 	float keySpeed = 0.001f;
@@ -56,17 +58,27 @@ public:
 			0, 3, 1,
 			1, 3, 2
 		};
-		mMesh = std::make_shared<graphics::Mesh>(&vertices[0], 4, 3, &elements[0], 6);
+		float texcoords[]
+		{
+			1.f, 1.f,
+			1.f, 0.f,
+			0.f, 0.f,
+			0.f, 1.f
+		};
+		mMesh = std::make_shared<graphics::Mesh>(&vertices[0], 4, 3, &texcoords[0], &elements[0], 6);
 
 		// Test Shader
 		const char* vertexShader = R"(
 					#version 410 core
 					layout (location = 0) in vec3 position;
+					layout (location = 1) in vec2 texcoords;
 					out vec3 vpos;
+					out vec2 uvs;
 					uniform vec2 offset = vec2(0.5);
 					uniform mat4 model = mat4(1.0);
 					void main()
 					{
+						uvs = texcoords;
 						vpos = position + vec3(offset, 0);
 						gl_Position = model * vec4(position, 1.0);
 					}
@@ -76,12 +88,15 @@ public:
 					#version 410 core
 					out vec4 outColor;
 					in vec3 vpos;
+					in vec2 uvs;
 
 					uniform vec3 color = vec3(0.0);
 					uniform float blue = 0.5f;
+					uniform sampler2D tex;
 					void main()
 					{
-						outColor = vec4(vpos.xy, blue, 1.0);
+						//outColor = vec4(vpos.xy, blue, 1.0);
+						outColor = texture(tex, uvs);
 					}
 				)";
 		mShader = std::make_shared<graphics::Shader>(vertexShader, fragmentShader);
@@ -89,6 +104,10 @@ public:
 
 		mRectPos = glm::vec2(0.f);
 		mRectSize = glm::vec2(1.f);
+
+		// Texture
+		mTexture = std::make_shared<graphics::Texture>("res/bro.png");
+		mTexture->SetTextureFilter(graphics::TextureFilter::Nearest);
     }
 
 	void Shutdown() override
@@ -132,7 +151,7 @@ public:
 
 	void Render() override
 	{
-		Engine::Instance().GetRenderManager().Submit(HIPPO_SUBMIT_RC(RenderMesh, mMesh, mShader));
+		Engine::Instance().GetRenderManager().Submit(HIPPO_SUBMIT_RC(RenderMeshTextured, mMesh, mTexture, mShader));
 	}
 
 	void ImguiRender() override

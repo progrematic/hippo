@@ -6,6 +6,7 @@ namespace hippo::graphics
 {
 	class Mesh;
 	class Shader;
+	class Texture;
 	class Framebuffer;
 
 	namespace rendercommands
@@ -28,6 +29,22 @@ namespace hippo::graphics
 
 		private:
 			std::weak_ptr<Mesh> mMesh;
+			std::weak_ptr<Shader> mShader;
+		};
+
+		class RenderMeshTextured : public RenderCommand
+		{
+		public:
+			RenderMeshTextured(std::weak_ptr<Mesh> mesh, std::weak_ptr<Texture> texture, std::weak_ptr<Shader> shader)
+				: mMesh(mesh)
+				, mTexture(texture)
+				, mShader(shader)
+			{}
+			virtual void Execute() override;
+
+		private:
+			std::weak_ptr<Mesh> mMesh;
+			std::weak_ptr<Texture> mTexture;
 			std::weak_ptr<Shader> mShader;
 		};
 
