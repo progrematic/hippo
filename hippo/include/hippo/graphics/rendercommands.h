@@ -4,7 +4,7 @@
 
 namespace hippo::graphics
 {
-	class Mesh;
+	class VertexArray;
 	class Shader;
 	class Texture;
 	class Framebuffer;
@@ -18,32 +18,32 @@ namespace hippo::graphics
 			virtual ~RenderCommand() {}
 		};
 
-		class RenderMesh : public RenderCommand
+		class RenderVertexArray : public RenderCommand
 		{
 		public:
-			RenderMesh(std::weak_ptr<Mesh> mesh, std::weak_ptr<Shader> shader)
-				: mMesh(mesh)
+			RenderVertexArray(std::weak_ptr<VertexArray> vertexArray, std::weak_ptr<Shader> shader)
+				: mVertexArray(vertexArray)
 				, mShader(shader)
 			{}
 			virtual void Execute() override;
 
 		private:
-			std::weak_ptr<Mesh> mMesh;
+			std::weak_ptr<VertexArray> mVertexArray;
 			std::weak_ptr<Shader> mShader;
 		};
 
-		class RenderMeshTextured : public RenderCommand
+		class RenderVertexArrayTextured : public RenderCommand
 		{
 		public:
-			RenderMeshTextured(std::weak_ptr<Mesh> mesh, std::weak_ptr<Texture> texture, std::weak_ptr<Shader> shader)
-				: mMesh(mesh)
+			RenderVertexArrayTextured(std::weak_ptr<VertexArray> vertexArray, std::weak_ptr<Texture> texture, std::weak_ptr<Shader> shader)
+				: mVertexArray(vertexArray)
 				, mTexture(texture)
 				, mShader(shader)
 			{}
 			virtual void Execute() override;
 
 		private:
-			std::weak_ptr<Mesh> mMesh;
+			std::weak_ptr<VertexArray> mVertexArray;
 			std::weak_ptr<Texture> mTexture;
 			std::weak_ptr<Shader> mShader;
 		};

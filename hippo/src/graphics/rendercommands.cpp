@@ -3,7 +3,7 @@
 #include "hippo/engine.h"
 #include "hippo/log.h"
 
-#include "hippo/graphics/mesh.h"
+#include "hippo/graphics/vertex.h"
 #include "hippo/graphics/shader.h"
 #include "hippo/graphics/texture.h"
 #include "hippo/graphics/framebuffer.h"
@@ -12,60 +12,60 @@
 
 namespace hippo::graphics::rendercommands
 {
-	void RenderMesh::Execute()
+	void RenderVertexArray::Execute()
 	{
-		std::shared_ptr<Mesh> mesh = mMesh.lock();
+		std::shared_ptr<VertexArray> va = mVertexArray.lock();
 		std::shared_ptr<Shader> shader = mShader.lock();
-		if (mesh && shader)
+		if (va && shader)
 		{
-			mesh->Bind();
+			va->Bind();
 			shader->Bind();
 
-			if (mesh->GetElementCount() > 0)
+			if (va->GetElementCount() > 0)
 			{
-				glDrawElements(GL_TRIANGLES, mesh->GetElementCount(), GL_UNSIGNED_INT, 0);
+				glDrawElements(GL_TRIANGLES, va->GetElementCount(), GL_UNSIGNED_INT, 0);
 			}
 			else
 			{
-				glDrawArrays(GL_TRIANGLE_STRIP, 0, mesh->GetVertexCount()); HIPPO_CHECK_GL_ERROR;
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, va->GetVertexCount()); HIPPO_CHECK_GL_ERROR;
 			}
 
 			shader->Unbind();
-			mesh->Unbind();
+			va->Unbind();
 		}
 		else
 		{
-			HIPPO_WARN("Attempting to execute RenderMesh with invalid data");
+			HIPPO_WARN("Attempting to execute RenderVertexArray with invalid data");
 		}
 	}
 
-	void RenderMeshTextured::Execute()
+	void RenderVertexArrayTextured::Execute()
 	{
-		std::shared_ptr<Mesh> mesh = mMesh.lock();
+		std::shared_ptr<VertexArray> va = mVertexArray.lock();
 		std::shared_ptr<Texture> texture = mTexture.lock();
 		std::shared_ptr<Shader> shader = mShader.lock();
-		if (mesh && texture && shader)
+		if (va && texture && shader)
 		{
-			mesh->Bind();
+			va->Bind();
 			texture->Bind();
 			shader->Bind();
 
-			if (mesh->GetElementCount() > 0)
+			if (va->GetElementCount() > 0)
 			{
-				glDrawElements(GL_TRIANGLES, mesh->GetElementCount(), GL_UNSIGNED_INT, 0);
+				glDrawElements(GL_TRIANGLES, va->GetElementCount(), GL_UNSIGNED_INT, 0);
 			}
 			else
 			{
-				glDrawArrays(GL_TRIANGLE_STRIP, 0, mesh->GetVertexCount()); HIPPO_CHECK_GL_ERROR;
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, va->GetVertexCount()); HIPPO_CHECK_GL_ERROR;
 			}
 
 			shader->Unbind();
 			texture->Unbind();
-			mesh->Unbind();
+			va->Unbind();
 		}
 		else
 		{
-			HIPPO_WARN("Attempting to execute RenderMesh with invalid data");
+			HIPPO_WARN("Attempting to execute RenderVertexArrayTextured with invalid data");
 		}
 	}
 
