@@ -65,27 +65,20 @@ namespace hippo::graphics
 
 	VertexArray::~VertexArray()
 	{
-		uint32_t id;
-		for (auto& vbo : mVbos)
-		{
-			id = vbo->GetId();
-			glDeleteBuffers(1, &id); HIPPO_CHECK_GL_ERROR;
-			delete vbo;
-		}
-		glDeleteVertexArrays(1, &mVao); HIPPO_CHECK_GL_ERROR;
 		mVbos.clear();
+		glDeleteVertexArrays(1, &mVao); HIPPO_CHECK_GL_ERROR;
 	}
 
-	void VertexArray::PushBuffer(RawVertexBuffer* vbo)
+	void VertexArray::PushBuffer(std::unique_ptr<RawVertexBuffer> vbo)
 	{
 		if (mVbos.size() > 0)
 		{
-			HIPPO_ASSERT(mVbos[0]->GetVertexCount() == vbo->GetVertexCount(), "VertexArray::PushBuffer - Attempting to push a VertexBuffer with a different VertexCount");
+			HIPPO_ASSERT(mVbos[0]->GetVertexCount() == vbo->GetVertexCount(), "Attempting to push a VertexBuffer with a different VertexCount");
 		}
-		HIPPO_ASSERT(vbo->GetLayout().size() > 0, "VertexArray::PushBuffer - VertexBuffer has no layout defined");
+		HIPPO_ASSERT(vbo->GetLayout().size() > 0, "VertexBuffer has no layout defined");
 		if (vbo->GetLayout().size() > 0)
 		{
-			mVbos.push_back(vbo);
+			mVbos.push_back(std::move(vbo));
 			mVertexCount = (uint32_t)mVbos[0]->GetVertexCount();
 		}
 	}
@@ -123,6 +116,7 @@ namespace hippo::graphics
 			vbo->Unbind();
 		}
 		glBindVertexArray(0); HIPPO_CHECK_GL_ERROR;
+		mIsValid = true;
 	}
 
 	void VertexArray::Bind()

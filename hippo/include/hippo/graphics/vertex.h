@@ -1,7 +1,10 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 #include <type_traits>
+
+#define HIPPO_CREATE_VERTEX_BUFFER(name, type) std::unique_ptr<hippo::graphics::VertexBuffer<type>> name = std::make_unique<hippo::graphics::VertexBuffer<type>>()
 
 namespace hippo::graphics
 {
@@ -64,6 +67,7 @@ namespace hippo::graphics
 			, "This type is not supported");
 	public:
 		VertexBuffer()
+			: mValueCount(0)
 		{
 			if constexpr (std::is_same<T, char>())			{ mGLType = RawVertexBuffer::GLTypeByte; }
 			if constexpr (std::is_same<T, unsigned char>()) { mGLType = RawVertexBuffer::GLTypeUByte; }
@@ -80,8 +84,18 @@ namespace hippo::graphics
 
 		void PushVertex(const std::vector<T>& vert)
 		{
-			mVertexCount++;
-			mDataVec.insert(mDataVec.end(), vert.begin(), vert.end());
+			HIPPO_ASSERT(vert.size() > 0, "No values passed in for vertex");
+			if (mDataVec.size() == 0)
+			{
+				mValueCount = (uint32_t)vert.size();
+			}
+
+			HIPPO_ASSERT(vert.size() == mValueCount, "Attempting to push a Vertex with an unexpected amount of values");
+			if (vert.size() == mValueCount)
+			{
+				mVertexCount++;
+				mDataVec.insert(mDataVec.end(), vert.begin(), vert.end());
+			}
 		}
 
 		void Upload(bool dynamic = false) override
@@ -96,6 +110,7 @@ namespace hippo::graphics
 
 	private:
 		std::vector<T> mDataVec;
+		uint32_t mValueCount;
 	};
 
 	class VertexArray
@@ -108,7 +123,7 @@ namespace hippo::graphics
 		inline uint32_t GetVertexCount() const { return mVertexCount; }
 		inline uint32_t GetElementCount() const { return mElementCount; }
 
-		void PushBuffer(RawVertexBuffer* vbo);
+		void PushBuffer(std::unique_ptr<RawVertexBuffer> vbo);
 		void SetElements(const std::vector<uint32_t>& elements);
 
 		void Upload();
@@ -121,6 +136,6 @@ namespace hippo::graphics
 		uint32_t mVertexCount, mElementCount;
 		uint32_t mVao, mEbo;
 		uint32_t mAttributeCount;
-		std::vector<RawVertexBuffer*> mVbos;
+		std::vector<std::unique_ptr<RawVertexBuffer>> mVbos;
 	};
 }

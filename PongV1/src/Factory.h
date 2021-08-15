@@ -3,7 +3,7 @@
 #include "Gameobjects/Gameobject.h"
 #include "Gameobjects/Ball.h"
 
-#include "hippo/graphics/mesh.h"
+#include "hippo/graphics/vertex.h"
 #include "hippo/graphics/shader.h"
 
 #include "external/glm/glm.hpp"
@@ -13,14 +13,12 @@
 namespace factory
 {
 	// Test Mesh
-	static float Vertices[]
-	{
-		 0.5f,  0.5f, 0.f,
-		 0.5f, -0.5f, 0.f,
-		-0.5f, -0.5f, 0.f,
-		-0.5f,  0.5f, 0.f
-	};
-	static uint32_t Elements[]
+	static std::vector<float> Vertex1{ 0.5f,  0.5f, 0.f };
+	static std::vector<float> Vertex2{ 0.5f, -0.5f, 0.f };
+	static std::vector<float> Vertex3{ -0.5f,  -0.5f, 0.f };
+	static std::vector<float> Vertex4{ -0.5f,  0.5f, 0.f };
+	
+	static std::vector<uint32_t> Elements
 	{
 		0, 3, 1,
 		1, 3, 2
@@ -100,32 +98,62 @@ namespace factory
 
 	std::shared_ptr<Gameobject> CreatePaddle(const glm::vec2& pos)
 	{
-		std::shared_ptr<hippo::graphics::Mesh> mesh = std::make_shared<hippo::graphics::Mesh>(&Vertices[0], 4, 3, &Elements[0], 6);
+		HIPPO_CREATE_VERTEX_BUFFER(vb, float);
+		vb->PushVertex(Vertex1);
+		vb->PushVertex(Vertex2);
+		vb->PushVertex(Vertex3);
+		vb->PushVertex(Vertex4);
+		vb->SetLayout({ 3 });
+		std::shared_ptr<hippo::graphics::VertexArray> va = std::make_shared<hippo::graphics::VertexArray>();
+		va->PushBuffer(std::move(vb));
+		va->SetElements(Elements);
+		va->Upload();
+
 		std::shared_ptr<hippo::graphics::Shader> shader = std::make_shared<hippo::graphics::Shader>(VertexShader, FragmentShader);
 		
 		glm::vec2 size{ 0.1, 0.3 };
-		auto ret = std::make_shared<Gameobject>(mesh, shader, pos, size);
+		auto ret = std::make_shared<Gameobject>(va, shader, pos, size);
 		return ret;
 	}
 
 	std::shared_ptr<Ball> CreateBall(const glm::vec2& pos)
 	{
-		std::shared_ptr<hippo::graphics::Mesh> mesh = std::make_shared<hippo::graphics::Mesh>(&Vertices[0], 4, 3, &Elements[0], 6);
+		HIPPO_CREATE_VERTEX_BUFFER(vb, float);
+		vb->PushVertex(Vertex1);
+		vb->PushVertex(Vertex2);
+		vb->PushVertex(Vertex3);
+		vb->PushVertex(Vertex4);
+		vb->SetLayout({ 3 });
+		std::shared_ptr<hippo::graphics::VertexArray> va = std::make_shared<hippo::graphics::VertexArray>();
+		va->PushBuffer(std::move(vb));
+		va->SetElements(Elements);
+		va->Upload();
+
 		std::shared_ptr<hippo::graphics::Shader> shader = std::make_shared<hippo::graphics::Shader>(VertexShader, BallFragmentShader);
 
 		glm::vec2 size{ 0.075, 0.1 };
-		auto ret = std::make_shared<Ball>(mesh, shader, pos, size);
+		auto ret = std::make_shared<Ball>(va, shader, pos, size);
 		return ret;
 	}
 
 	std::shared_ptr<Gameobject> CreateBG()
 	{
-		std::shared_ptr<hippo::graphics::Mesh> mesh = std::make_shared<hippo::graphics::Mesh>(&Vertices[0], 4, 3, &Elements[0], 6);
+		HIPPO_CREATE_VERTEX_BUFFER(vb, float);
+		vb->PushVertex(Vertex1);
+		vb->PushVertex(Vertex2);
+		vb->PushVertex(Vertex3);
+		vb->PushVertex(Vertex4);
+		vb->SetLayout({ 3 });
+		std::shared_ptr<hippo::graphics::VertexArray> va = std::make_shared<hippo::graphics::VertexArray>();
+		va->PushBuffer(std::move(vb));
+		va->SetElements(Elements);
+		va->Upload();
+
 		std::shared_ptr<hippo::graphics::Shader> shader = std::make_shared<hippo::graphics::Shader>(VertexShader, BGFragmentShader);
 
 		glm::vec2 pos{ 0.f ,0.f };
 		glm::vec2 size{ 2.f, 2.f };
-		auto ret = std::make_shared<Gameobject>(mesh, shader, pos, size);
+		auto ret = std::make_shared<Gameobject>(va, shader, pos, size);
 		return ret;
 	}
 }

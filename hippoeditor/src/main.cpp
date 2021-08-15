@@ -48,22 +48,22 @@ public:
 		mVA = std::make_shared<graphics::VertexArray>();
 
 		{
-			graphics::VertexBuffer<float>* vb = new graphics::VertexBuffer<float>();
+			HIPPO_CREATE_VERTEX_BUFFER(vb, float);
 			vb->PushVertex({ 0.5f, 0.5f, 0.f, 1.f, 1.f, 1.f });
 			vb->PushVertex({ 0.5f, -0.5f, 0.f, 1.f, 0.f, 1.f });
 			vb->PushVertex({ -0.5f, -0.5f, 0.f, 0.f, 1.f, 1.f });
 			vb->PushVertex({ -0.5f, 0.5f, 0.f, 0.f, 1.f, 0.f });
 			vb->SetLayout({ 3, 3 });
-			mVA->PushBuffer(vb);
+			mVA->PushBuffer(std::move(vb));
 		}
 		{
-			graphics::VertexBuffer<short>* vb = new graphics::VertexBuffer<short>();
+			HIPPO_CREATE_VERTEX_BUFFER(vb, short);
 			vb->PushVertex({ 1, 1 });
 			vb->PushVertex({ 1, 0 });
 			vb->PushVertex({ 0, 0 });
 			vb->PushVertex({ 0, 1 });
 			vb->SetLayout({ 2 });
-			mVA->PushBuffer(vb);
+			mVA->PushBuffer(std::move(vb));
 		}
 
 		mVA->SetElements({ 0, 3, 1, 1, 3, 2 });

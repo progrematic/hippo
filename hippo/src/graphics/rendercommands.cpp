@@ -18,20 +18,24 @@ namespace hippo::graphics::rendercommands
 		std::shared_ptr<Shader> shader = mShader.lock();
 		if (va && shader)
 		{
-			va->Bind();
-			shader->Bind();
-
-			if (va->GetElementCount() > 0)
+			HIPPO_ASSERT(va->IsValid(), "Attempting to execute invalid RenderVertexArray - did you forget to call VertexArray::Upload()?");
+			if (va->IsValid())
 			{
-				glDrawElements(GL_TRIANGLES, va->GetElementCount(), GL_UNSIGNED_INT, 0);
-			}
-			else
-			{
-				glDrawArrays(GL_TRIANGLE_STRIP, 0, va->GetVertexCount()); HIPPO_CHECK_GL_ERROR;
-			}
+				va->Bind();
+				shader->Bind();
 
-			shader->Unbind();
-			va->Unbind();
+				if (va->GetElementCount() > 0)
+				{
+					glDrawElements(GL_TRIANGLES, va->GetElementCount(), GL_UNSIGNED_INT, 0);
+				}
+				else
+				{
+					glDrawArrays(GL_TRIANGLE_STRIP, 0, va->GetVertexCount()); HIPPO_CHECK_GL_ERROR;
+				}
+
+				shader->Unbind();
+				va->Unbind();
+			}
 		}
 		else
 		{
@@ -46,22 +50,26 @@ namespace hippo::graphics::rendercommands
 		std::shared_ptr<Shader> shader = mShader.lock();
 		if (va && texture && shader)
 		{
-			va->Bind();
-			texture->Bind();
-			shader->Bind();
-
-			if (va->GetElementCount() > 0)
+			HIPPO_ASSERT(va->IsValid(), "Attempting to execute invalid RenderVertexArrayTextured - did you forget to call VertexArray::Upload()?");
+			if (va->IsValid())
 			{
-				glDrawElements(GL_TRIANGLES, va->GetElementCount(), GL_UNSIGNED_INT, 0);
-			}
-			else
-			{
-				glDrawArrays(GL_TRIANGLE_STRIP, 0, va->GetVertexCount()); HIPPO_CHECK_GL_ERROR;
-			}
+				va->Bind();
+				texture->Bind();
+				shader->Bind();
 
-			shader->Unbind();
-			texture->Unbind();
-			va->Unbind();
+				if (va->GetElementCount() > 0)
+				{
+					glDrawElements(GL_TRIANGLES, va->GetElementCount(), GL_UNSIGNED_INT, 0);
+				}
+				else
+				{
+					glDrawArrays(GL_TRIANGLE_STRIP, 0, va->GetVertexCount()); HIPPO_CHECK_GL_ERROR;
+				}
+
+				shader->Unbind();
+				texture->Unbind();
+				va->Unbind();
+			}
 		}
 		else
 		{
