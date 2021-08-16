@@ -4,6 +4,8 @@
 #include <vector>
 #include <type_traits>
 
+#include "hippo/log.h"
+
 #define HIPPO_CREATE_VERTEX_BUFFER(name, type) std::unique_ptr<hippo::graphics::VertexBuffer<type>> name = std::make_unique<hippo::graphics::VertexBuffer<type>>()
 
 namespace hippo::graphics
