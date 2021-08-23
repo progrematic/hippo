@@ -9,6 +9,8 @@
 namespace hippo::graphics
 {
 	Shader::Shader(const std::string& vertex, const std::string& fragment)
+		: mVertexShader(vertex)
+		, mFragmentShader(fragment)
 	{
 		mProgramId = glCreateProgram(); HIPPO_CHECK_GL_ERROR;
 

@@ -4,6 +4,8 @@
 #include "hippo/main.h"
 #include "hippo/log.h"
 
+#include "hippo/core/assetlibrary.h"
+
 #include "hippo/graphics/shader.h"
 #include "hippo/graphics/vertex.h"
 #include "hippo/graphics/framebuffer.h"
@@ -32,6 +34,11 @@ private:
 
 	glm::vec2 mRectPos, mRectSize;
 
+	// Asset Libraries
+	core::AssetLibrary<graphics::VertexArray> mVALibrary;
+	core::AssetLibrary<graphics::Shader> mShaderLibrary;
+	core::AssetLibrary<graphics::Texture> mTextureLibrary;
+
 public:
 	core::WindowProperties GetWindowProperties() override
 	{
@@ -45,75 +52,14 @@ public:
 
 	void Initialize() override
 	{
-		mVA = std::make_shared<graphics::VertexArray>();
-
-		{
-			HIPPO_CREATE_VERTEX_BUFFER(vb, float);
-			vb->PushVertex({ 0.5f, 0.5f, 0.f, 1.f, 1.f, 1.f });
-			vb->PushVertex({ 0.5f, -0.5f, 0.f, 1.f, 0.f, 1.f });
-			vb->PushVertex({ -0.5f, -0.5f, 0.f, 0.f, 1.f, 1.f });
-			vb->PushVertex({ -0.5f, 0.5f, 0.f, 0.f, 1.f, 0.f });
-			vb->SetLayout({ 3, 3 });
-			mVA->PushBuffer(std::move(vb));
-		}
-		{
-			HIPPO_CREATE_VERTEX_BUFFER(vb, short);
-			vb->PushVertex({ 1, 1 });
-			vb->PushVertex({ 1, 0 });
-			vb->PushVertex({ 0, 0 });
-			vb->PushVertex({ 0, 1 });
-			vb->SetLayout({ 2 });
-			mVA->PushBuffer(std::move(vb));
-		}
-
-		mVA->SetElements({ 0, 3, 1, 1, 3, 2 });
-		mVA->Upload();
-
-		// Test Shader
-		const char* vertexShader = R"(
-					#version 410 core
-					layout (location = 0) in vec3 position;
-					layout (location = 1) in vec3 colour;
-					layout (location = 2) in vec2 texcoords;
-					out vec3 vpos;
-					out vec3 col;
-					out vec2 uvs;
-					uniform vec2 offset = vec2(0.5);
-					uniform mat4 model = mat4(1.0);
-					void main()
-					{
-						col = colour;
-						uvs = texcoords;
-						vpos = position + vec3(offset, 0);
-						gl_Position = model * vec4(position, 1.0);
-					}
-				)";
-
-		const char* fragmentShader = R"(
-					#version 410 core
-					out vec4 outColor;
-					in vec3 vpos;
-					in vec3 col;
-					in vec2 uvs;
-
-					uniform vec3 color = vec3(0.0);
-					uniform float blue = 0.5f;
-					uniform sampler2D tex;
-					void main()
-					{
-						//outColor = vec4(vpos.xy, blue, 1.0);
-						outColor = texture(tex, uvs) + vec4(col, 1.0);
-					}
-				)";
-		mShader = std::make_shared<graphics::Shader>(vertexShader, fragmentShader);
-		mShader->SetUniformFloat3("color", 1, 0, 0);
-
+		InitializeLibraries();
+		
 		mRectPos = glm::vec2(0.f);
 		mRectSize = glm::vec2(1.f);
 
-		// Texture
-		mTexture = std::make_shared<graphics::Texture>("res/bro.png");
-		mTexture->SetTextureFilter(graphics::TextureFilter::Nearest);
+		mVA = mVALibrary.Get("Rect");
+		mShader = mShaderLibrary.Get("Rect");
+		mTexture = mTextureLibrary.Get("Bro");
     }
 
 	void Shutdown() override
@@ -163,17 +109,36 @@ public:
 	void ImguiRender() override
 	{
 		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
-		if (ImGui::Begin("Rect Pos"))
+		if (ImGui::Begin("Rect Controles"))
 		{
 			ImGui::DragFloat2("Rect Pos", glm::value_ptr(mRectPos), 0.01f);
+			ImGui::DragFloat2("Rect Size", glm::value_ptr(mRectSize), 0.01f);
 		}
 		ImGui::End();
 
-		if (ImGui::Begin("RectSize"))
+		if (ImGui::Begin("Options"))
 		{
-			ImGui::DragFloat2("Rect Size", glm::value_ptr(mRectSize), 0.01f);
+			if (ImGui::Button("Rect"))
+			{
+				mVA = mVALibrary.Get("Rect");
+				mShader = mShaderLibrary.Get("Rect");
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("RectTextured"))
+			{
+				mVA = mVALibrary.Get("TexturedRect");
+				mShader = mShaderLibrary.Get("TexturedRect");
+			}
+			if (ImGui::Button("Bro"))
+			{
+				mTexture = mTextureLibrary.Get("Bro");
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Bro2"))
+			{
+				mTexture = mTextureLibrary.Get("Bro2");
+			}
 		}
-
 		ImGui::End();
 
 		if (ImGui::Begin("GameView"))
@@ -191,6 +156,191 @@ public:
 			ImGui::Image((void*)(intptr_t)window.GetFramebuffer()->GetTextureId(), size, uv0, uv1);
 		}
 		ImGui::End();
+
+		if (ImGui::Begin("Asset Library Viewer"))
+		{
+			ImVec4 datacol(0, 1, 0, 1);
+			ImVec4 errorcol(1, 0, 0, 1);
+			if (ImGui::TreeNode("Texture Library"))
+			{
+				for (const auto& kv : mTextureLibrary.GetAll())
+				{
+					std::string tmpstr = kv.first + "##AssetLibraryViewer.TextureLibrary";
+					if (ImGui::TreeNode(tmpstr.c_str()))
+					{
+						graphics::Texture* tex = kv.second.get();
+						if (tex)
+						{
+							ImGui::TextColored(datacol, "Use count: "); ImGui::SameLine();
+							ImGui::Text("%03d", (int)kv.second.use_count());
+							ImGui::TextColored(datacol, "Size: "); ImGui::SameLine();
+							ImGui::Text("%dx%d", tex->GetWidth(), tex->GetHeight());
+							ImGui::TextColored(datacol, "Channels: "); ImGui::SameLine();
+							ImGui::Text("%d", tex->GetNumChannels());
+							ImGui::TextColored(datacol, "Path: "); ImGui::SameLine();
+							ImGui::Text("%s", tex->GetPath().c_str());
+							ImVec2 size{ (float)tex->GetWidth(), (float)tex->GetHeight() };
+							ImGui::Image((void*)(intptr_t)tex->GetId(), size, { 0, 1 }, { 1, 0 });
+						}
+						else
+						{
+							ImGui::TextColored(errorcol, "Invalid texture: %s", kv.first.c_str());
+						}
+						ImGui::TreePop();
+					}
+				}
+				ImGui::TreePop();
+			}
+			if (ImGui::TreeNode("Shader Library"))
+			{
+				for (const auto& kv : mShaderLibrary.GetAll())
+				{
+					std::string tmpstr = kv.first + "##AssetLibraryViewer.ShaderLibrary";
+					if (ImGui::TreeNode(tmpstr.c_str()))
+					{
+						graphics::Shader* shader = kv.second.get();
+						if (shader)
+						{
+							ImGui::TextColored(datacol, "Use count: "); ImGui::SameLine();
+							ImGui::Text("%03d", (int)kv.second.use_count());
+							tmpstr = "Vertex Source##AssetLibraryViewer.ShaderLibrary." + kv.first;
+							if (ImGui::TreeNode(tmpstr.c_str()))
+							{
+								ImGui::TextWrapped("%s", shader->GetVertexShaderSource().c_str());
+								ImGui::TreePop();
+							}
+							tmpstr = "Fragment Source##AssetLibraryViewer.ShaderLibrary." + kv.first;
+							if (ImGui::TreeNode(tmpstr.c_str()))
+							{
+								ImGui::TextWrapped("%s", shader->GetFragmentShaderSource().c_str());
+								ImGui::TreePop();
+							}
+						}
+						else
+						{
+							ImGui::TextColored(errorcol, "Invalid Shader: %s", kv.first.c_str());
+						}
+						ImGui::TreePop();
+					}
+				}
+				ImGui::TreePop();
+			}
+		}
+		ImGui::End();
+	}
+
+	void InitializeLibraries()
+	{
+		// VertexArray
+		{
+			std::shared_ptr<graphics::VertexArray> va = std::make_shared<graphics::VertexArray>();
+			{
+				HIPPO_CREATE_VERTEX_BUFFER(vb, float);
+				vb->PushVertex({ 0.5f, 0.5f, 0.f });
+				vb->PushVertex({ 0.5f, -0.5f, 0.f });
+				vb->PushVertex({ -0.5f, -0.5f, 0.f });
+				vb->PushVertex({ -0.5f, 0.5f, 0.f });
+				vb->SetLayout({ 3 });
+				va->PushBuffer(std::move(vb));
+			}
+
+			va->SetElements({ 0, 3, 1, 1, 3, 2 });
+			va->Upload();
+
+			mVALibrary.Load("Rect", va);
+		}
+		{
+			std::shared_ptr<graphics::VertexArray> va = std::make_shared<graphics::VertexArray>();
+			{
+				HIPPO_CREATE_VERTEX_BUFFER(vb, float);
+				vb->PushVertex({ 0.5f, 0.5f, 0.f });
+				vb->PushVertex({ 0.5f, -0.5f, 0.f });
+				vb->PushVertex({ -0.5f, -0.5f, 0.f });
+				vb->PushVertex({ -0.5f, 0.5f, 0.f });
+				vb->SetLayout({ 3 });
+				va->PushBuffer(std::move(vb));
+			}
+			{
+				HIPPO_CREATE_VERTEX_BUFFER(vb, short);
+				vb->PushVertex({ 1, 1 });
+				vb->PushVertex({ 1, 0 });
+				vb->PushVertex({ 0, 0 });
+				vb->PushVertex({ 0, 1 });
+				vb->SetLayout({ 2 });
+				va->PushBuffer(std::move(vb));
+			}
+
+			va->SetElements({ 0, 3, 1, 1, 3, 2 });
+			va->Upload();
+
+			mVALibrary.Load("TexturedRect", va);
+		}
+
+		// Shader
+		{
+			const char* vertexShader = R"(
+					#version 410 core
+					layout (location = 0) in vec3 position;
+					
+					uniform mat4 model = mat4(1.0);
+					void main()
+					{
+						gl_Position = model * vec4(position, 1.0);
+					}
+				)";
+
+			const char* fragmentShader = R"(
+					#version 410 core
+					out vec4 outColor;
+
+					uniform vec4 col = vec4(1.0);
+					void main()
+					{
+						outColor = col;
+					}
+				)";
+			mShaderLibrary.Load("Rect", std::make_shared<graphics::Shader>(vertexShader, fragmentShader));
+		}
+		{
+			const char* vertexShader = R"(
+					#version 410 core
+					layout (location = 0) in vec3 position;
+					layout (location = 1) in vec2 texcoords;
+					out vec2 uvs;
+					
+					uniform mat4 model = mat4(1.0);
+					void main()
+					{
+						uvs = texcoords;
+						gl_Position = model * vec4(position, 1.0);
+					}
+				)";
+
+			const char* fragmentShader = R"(
+					#version 410 core
+					out vec4 outColor;
+					in vec2 uvs;
+
+					uniform sampler2D tex;
+					void main()
+					{
+						outColor = texture(tex, uvs);
+					}
+				)";
+			mShaderLibrary.Load("TexturedRect", std::make_shared<graphics::Shader>(vertexShader, fragmentShader));
+		}
+
+		// Texture
+		{
+			std::shared_ptr<graphics::Texture> tex = std::make_shared<graphics::Texture>("res/bro.png");
+			tex->SetTextureFilter(graphics::TextureFilter::Nearest);
+			mTextureLibrary.Load("Bro", tex);
+		}
+		{
+			std::shared_ptr<graphics::Texture> tex = std::make_shared<graphics::Texture>("res/bro2.png");
+			tex->SetTextureFilter(graphics::TextureFilter::Nearest);
+			mTextureLibrary.Load("Bro2", tex);
+		}
 	}
 };
 
