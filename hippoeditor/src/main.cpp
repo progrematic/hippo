@@ -10,6 +10,7 @@
 #include "hippo/graphics/vertex.h"
 #include "hippo/graphics/framebuffer.h"
 #include "hippo/graphics/texture.h"
+#include "hippo/graphics/camera.h"
 
 #include "hippo/input/mouse.h"
 #include "hippo/input/keyboard.h"
@@ -25,6 +26,10 @@ using namespace hippo;
 class Editor : public hippo::App
 {
 private:
+	std::shared_ptr<graphics::Camera> mCamera;
+	glm::vec3 mCameraPos;
+	float mCameraRot;
+
 	std::shared_ptr<graphics::VertexArray> mVA;
 	std::shared_ptr<graphics::Shader> mShader;
 	std::shared_ptr<graphics::Texture> mTexture;
@@ -53,6 +58,10 @@ public:
 	void Initialize() override
 	{
 		InitializeLibraries();
+
+		mCamera = std::make_shared<graphics::Camera>();
+		mCamera->SetHeight(2.f);
+		mCamera->SetViewMatrix(mCameraPos, mCameraRot);
 		
 		mRectPos = glm::vec2(0.f);
 		mRectSize = glm::vec2(1.f);
@@ -103,16 +112,33 @@ public:
 
 	void Render() override
 	{
+		Engine::Instance().GetRenderManager().Submit(HIPPO_SUBMIT_RC(PushCamera, mCamera));
 		Engine::Instance().GetRenderManager().Submit(HIPPO_SUBMIT_RC(RenderVertexArrayTextured, mVA, mTexture, mShader));
+		Engine::Instance().GetRenderManager().Submit(HIPPO_SUBMIT_RC(PopCamera));
 	}
 
 	void ImguiRender() override
 	{
 		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
-		if (ImGui::Begin("Rect Controles"))
+		if (ImGui::Begin("Controls"))
 		{
 			ImGui::DragFloat2("Rect Pos", glm::value_ptr(mRectPos), 0.01f);
 			ImGui::DragFloat2("Rect Size", glm::value_ptr(mRectSize), 0.01f);
+
+			ImGui::Separator();
+			float camheight = mCamera->GetHeight();
+			ImGui::DragFloat("Camera Height", &camheight, 0.5f);
+			mCamera->SetHeight(camheight);
+			glm::vec3 cameraPos = mCameraPos;
+			float cameraRot = mCameraRot;
+			ImGui::DragFloat3("Camera Pos", glm::value_ptr(cameraPos), 0.01f);
+			ImGui::DragFloat("Camera Rot", &cameraRot, 1.f);
+			if (cameraPos != mCameraPos || cameraRot != mCameraRot)
+			{
+				mCameraPos = cameraPos;
+				mCameraRot = cameraRot;
+				mCamera->SetViewMatrix(cameraPos, cameraRot);
+			}
 		}
 		ImGui::End();
 
@@ -282,10 +308,12 @@ public:
 					#version 410 core
 					layout (location = 0) in vec3 position;
 					
+					uniform mat4 proj = mat4(1.0);
+					uniform mat4 view = mat4(1.0);
 					uniform mat4 model = mat4(1.0);
 					void main()
 					{
-						gl_Position = model * vec4(position, 1.0);
+						gl_Position = proj * view * model * vec4(position, 1.0);
 					}
 				)";
 
@@ -308,11 +336,13 @@ public:
 					layout (location = 1) in vec2 texcoords;
 					out vec2 uvs;
 					
+					uniform mat4 proj = mat4(1.0);
+					uniform mat4 view = mat4(1.0);
 					uniform mat4 model = mat4(1.0);
 					void main()
 					{
 						uvs = texcoords;
-						gl_Position = model * vec4(position, 1.0);
+						gl_Position = proj * view * model * vec4(position, 1.0);
 					}
 				)";
 

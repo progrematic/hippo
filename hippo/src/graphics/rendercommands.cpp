@@ -7,6 +7,7 @@
 #include "hippo/graphics/shader.h"
 #include "hippo/graphics/texture.h"
 #include "hippo/graphics/framebuffer.h"
+#include "hippo/graphics/camera.h"
 
 #include "glad/glad.h"
 
@@ -23,6 +24,15 @@ namespace hippo::graphics::rendercommands
 			{
 				va->Bind();
 				shader->Bind();
+
+				// TODO: Convert camera matrices to leverage UBOs
+				const auto& rm = Engine::Instance().GetRenderManager();
+				const auto& cam = rm.GetActiveCamera();
+				if (cam)
+				{
+					shader->SetUniformMat4("proj", cam->GetProjectionMatrix());
+					shader->SetUniformMat4("view", cam->GetViewMatrix());
+				}
 
 				if (va->GetElementCount() > 0)
 				{
@@ -56,6 +66,15 @@ namespace hippo::graphics::rendercommands
 				va->Bind();
 				texture->Bind();
 				shader->Bind();
+
+				// TODO: Convert camera matrices to leverage UBOs
+				const auto& rm = Engine::Instance().GetRenderManager();
+				const auto& cam = rm.GetActiveCamera();
+				if (cam)
+				{
+					shader->SetUniformMat4("proj", cam->GetProjectionMatrix());
+					shader->SetUniformMat4("view", cam->GetViewMatrix());
+				}
 
 				if (va->GetElementCount() > 0)
 				{
@@ -93,6 +112,24 @@ namespace hippo::graphics::rendercommands
 	void PopFramebuffer::Execute()
 	{
 		Engine::Instance().GetRenderManager().PopFramebuffer();
+	}
+
+	void PushCamera::Execute()
+	{
+		std::shared_ptr<Camera> cam = mCamera.lock();
+		if (cam)
+		{
+			Engine::Instance().GetRenderManager().PushCamera(cam);
+		}
+		else
+		{
+			HIPPO_WARN("Attempting to execute PushCamera with invalid data");
+		}
+	}
+
+	void PopCamera::Execute()
+	{
+		Engine::Instance().GetRenderManager().PopCamera();
 	}
 
 }

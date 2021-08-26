@@ -16,10 +16,14 @@ namespace hippo::managers
 	{
 		friend class graphics::rendercommands::PushFramebuffer;
 		friend class graphics::rendercommands::PopFramebuffer;
+		friend class graphics::rendercommands::PushCamera;
+		friend class graphics::rendercommands::PopCamera;
 
 	public:
 		RenderManager() {}
 		~RenderManager() {}
+
+		const graphics::Camera* GetActiveCamera() const;
 
 		void Initialize();
 		void Shutdown();
@@ -38,9 +42,12 @@ namespace hippo::managers
 	private:
 		void PushFramebuffer(std::shared_ptr<graphics::Framebuffer> framebuffer);
 		void PopFramebuffer();
+		void PushCamera(std::shared_ptr<graphics::Camera> camera);
+		void PopCamera();
 
 	private:
 		std::queue<std::unique_ptr<graphics::rendercommands::RenderCommand>> mRenderCommands;
 		std::stack<std::shared_ptr<graphics::Framebuffer>> mFramebuffers;
+		std::stack<std::shared_ptr<graphics::Camera>> mCameras;
 	};
 }

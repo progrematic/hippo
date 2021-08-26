@@ -8,6 +8,7 @@ namespace hippo::graphics
 	class Shader;
 	class Texture;
 	class Framebuffer;
+	class Camera;
 
 	namespace rendercommands
 	{
@@ -62,6 +63,23 @@ namespace hippo::graphics
 		{
 		public:
 			PopFramebuffer() {}
+			virtual void Execute() override;
+		};
+
+		class PushCamera : public RenderCommand
+		{
+		public:
+			PushCamera(std::weak_ptr<Camera> camera) : mCamera(camera) {}
+			virtual void Execute() override;
+
+		private:
+			std::weak_ptr<Camera> mCamera;
+		};
+
+		class PopCamera : public RenderCommand
+		{
+		public:
+			PopCamera() {}
 			virtual void Execute() override;
 		};
 	}

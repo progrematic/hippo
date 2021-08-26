@@ -88,6 +88,7 @@ namespace hippo::managers
 
 	void RenderManager::PushFramebuffer(std::shared_ptr<graphics::Framebuffer> framebuffer)
 	{
+		HIPPO_ASSERT(framebuffer, "Framebuffer is null");
 		mFramebuffers.push(framebuffer);
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->GetFbo()); HIPPO_CHECK_GL_ERROR;
 		SetViewport({ 0, 0, framebuffer->GetSize().x, framebuffer->GetSize().y });
@@ -116,6 +117,30 @@ namespace hippo::managers
 				SetViewport({ 0, 0, window.GetSize().x, window.GetSize().y });
 			}
 		}
+	}
+
+	void RenderManager::PushCamera(std::shared_ptr<graphics::Camera> camera)
+	{
+		HIPPO_ASSERT(camera, "Camera is null");
+		mCameras.push(camera);
+	}
+
+	void RenderManager::PopCamera()
+	{
+		HIPPO_ASSERT(mCameras.size() > 0, "RenderManager::PopCamera - empty stack");
+		if (mCameras.size() > 0)
+		{
+			mCameras.pop();
+		}
+	}
+
+	const hippo::graphics::Camera* RenderManager::GetActiveCamera() const
+	{
+		if (mCameras.size() > 0)
+		{
+			return mCameras.top().get();
+		}
+		return nullptr;
 	}
 
 }

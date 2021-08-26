@@ -105,6 +105,8 @@ namespace hippo::core
 			default:
 				break;
 			}
+
+			mImguiWindow.HandleSDLEvent(e);
 		}
 
 		// Update input
