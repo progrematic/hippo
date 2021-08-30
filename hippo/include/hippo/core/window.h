@@ -13,6 +13,8 @@ using SDL_GLContext = void*;
 namespace hippo::graphics
 {
 	class Framebuffer;
+	class VertexArray;
+	class Shader;
 }
 
 namespace hippo::core
@@ -23,6 +25,7 @@ namespace hippo::core
 		int x, y, w, h;
 		int wMin, hMin;
 		int flags;
+		float aspectRatio;
 		glm::vec3 clearColour;
 		ImguiWindowProperties imguiProps;
 
@@ -34,6 +37,8 @@ namespace hippo::core
 	public:
 		Window();
 		~Window();
+
+		inline void SetShouldRenderToScreen(bool render) { mShouldRenderToScreen = render; }
 
 		bool Create(const WindowProperties& props);
 		void Shutdown();
@@ -49,10 +54,24 @@ namespace hippo::core
 		void BeginRender();
 		void EndRender();
 
+		glm::ivec2 GetSizeInAspectRatio(int width, int height);
+
 	private:
+		void InitializeScreenRender();
+		void RenderToScreen();
+		void HandleResize(int width, int height);
+
+	private:
+		WindowProperties mWindowProperties;
 		SDL_Window* mWindow;
 		SDL_GLContext mGLContext;
 		ImguiWindow mImguiWindow;
 		std::shared_ptr<graphics::Framebuffer> mFramebuffer;
+
+		// Screen Render
+		bool mShouldRenderToScreen;
+		glm::vec2 mFramebufferSize;
+		std::shared_ptr<graphics::VertexArray> mScreenVA;
+		std::shared_ptr<graphics::Shader> mScreenShader;
 	};
 }
