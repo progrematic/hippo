@@ -11,6 +11,7 @@
 #include "hippo/graphics/framebuffer.h"
 #include "hippo/graphics/texture.h"
 #include "hippo/graphics/camera.h"
+#include "hippo/graphics/material.h"
 
 #include "hippo/input/mouse.h"
 #include "hippo/input/keyboard.h"
@@ -32,8 +33,8 @@ private:
 	float mCameraRot;
 
 	std::shared_ptr<graphics::VertexArray> mVA;
-	std::shared_ptr<graphics::Shader> mShader;
-	std::shared_ptr<graphics::Texture> mTexture;
+	std::shared_ptr<graphics::Material> mMaterial1;
+	std::shared_ptr<graphics::Material> mMaterial2;
 
 	glm::vec2 mRectPos, mRectSize;
 
@@ -41,6 +42,7 @@ private:
 	core::AssetLibrary<graphics::VertexArray> mVALibrary;
 	core::AssetLibrary<graphics::Shader> mShaderLibrary;
 	core::AssetLibrary<graphics::Texture> mTextureLibrary;
+	core::AssetLibrary<graphics::Material> mMaterialLibrary;
 
 public:
 	core::WindowProperties GetWindowProperties() override
@@ -68,8 +70,8 @@ public:
 		mRectSize = glm::vec2(1.f);
 
 		mVA = mVALibrary.Get("Rect");
-		mShader = mShaderLibrary.Get("Rect");
-		mTexture = mTextureLibrary.Get("Bro");
+		mMaterial1 = mMaterialLibrary.Get("RectRed");
+		mMaterial2 = mMaterialLibrary.Get("RectGreen");
     }
 
 	void Shutdown() override
@@ -85,17 +87,25 @@ public:
 			auto& window = Engine::Instance().GetWindow();
 			window.SetShouldRenderToScreen(!mImguiEnabled);
 		}
-
-		glm::mat4 model = glm::mat4(1.f);
-		model = glm::translate(model, { mRectPos.x, mRectPos.y, 0.f });
-		model = glm::scale(model, { mRectSize.x, mRectSize.y, 0.f });
-		mShader->SetUniformMat4("model", model);
 	}
 
 	void Render() override
 	{
 		Engine::Instance().GetRenderManager().Submit(HIPPO_SUBMIT_RC(PushCamera, mCamera));
-		Engine::Instance().GetRenderManager().Submit(HIPPO_SUBMIT_RC(RenderVertexArrayTextured, mVA, mTexture, mShader));
+
+		{
+			glm::mat4 model = glm::mat4(1.f);
+			model = glm::translate(model, { mRectPos.x, mRectPos.y, 0.f });
+			model = glm::scale(model, { mRectSize.x, mRectSize.y, 0.f });
+			Engine::Instance().GetRenderManager().Submit(HIPPO_SUBMIT_RC(RenderVertexArrayMaterial, mVA, mMaterial1, model));
+		}
+		{
+			glm::mat4 model = glm::mat4(1.f);
+			model = glm::translate(model, { mRectPos.x + 2.f, mRectPos.y, 0.f });
+			model = glm::scale(model, { mRectSize.x, mRectSize.y, 0.f });
+			Engine::Instance().GetRenderManager().Submit(HIPPO_SUBMIT_RC(RenderVertexArrayMaterial, mVA, mMaterial2, model));
+		}
+
 		Engine::Instance().GetRenderManager().Submit(HIPPO_SUBMIT_RC(PopCamera));
 	}
 
@@ -122,31 +132,6 @@ public:
 					mCameraPos = cameraPos;
 					mCameraRot = cameraRot;
 					mCamera->SetViewMatrix(cameraPos, cameraRot);
-				}
-			}
-			ImGui::End();
-
-			if (ImGui::Begin("Options"))
-			{
-				if (ImGui::Button("Rect"))
-				{
-					mVA = mVALibrary.Get("Rect");
-					mShader = mShaderLibrary.Get("Rect");
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("RectTextured"))
-				{
-					mVA = mVALibrary.Get("TexturedRect");
-					mShader = mShaderLibrary.Get("TexturedRect");
-				}
-				if (ImGui::Button("Bro"))
-				{
-					mTexture = mTextureLibrary.Get("Bro");
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Bro2"))
-				{
-					mTexture = mTextureLibrary.Get("Bro2");
 				}
 			}
 			ImGui::End();
@@ -361,6 +346,18 @@ public:
 			std::shared_ptr<graphics::Texture> tex = std::make_shared<graphics::Texture>("res/bro2.png");
 			tex->SetTextureFilter(graphics::TextureFilter::Nearest);
 			mTextureLibrary.Load("Bro2", tex);
+		}
+
+		// Material
+		{
+			std::shared_ptr<graphics::Material> mat = std::make_shared<graphics::Material>(mShaderLibrary.Get("Rect"));
+			mat->SetUniformValue("col", glm::vec4(1, 0, 0, 1));
+			mMaterialLibrary.Load("RectRed", mat);
+		}
+		{
+			std::shared_ptr<graphics::Material> mat = std::make_shared<graphics::Material>(mShaderLibrary.Get("Rect"));
+			mat->SetUniformValue("col", glm::vec4(0, 1, 0, 1));
+			mMaterialLibrary.Load("RectGreen", mat);
 		}
 	}
 };
