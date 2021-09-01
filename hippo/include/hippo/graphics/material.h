@@ -45,7 +45,7 @@ namespace hippo::graphics
 			else if constexpr (std::is_same<T, glm::mat4>()) { GETUNIFORMVALUE(mUniformMat4s, glm::mat4(1.f)) }
 			else
 			{
-				static_assert(false, "Unsupported data type in Material::GetUniformValue()");
+				static_assert(std::is_same<T, std::false_type>(), "Unsupported data type in Material::GetUniformValue()");
 			}
 		}
 #undef GETUNIFORMVALUE
@@ -62,7 +62,7 @@ namespace hippo::graphics
 			else if constexpr (std::is_same<T, glm::mat4>()) { mUniformMat4s[name] = val; }
 			else
 			{
-				static_assert(false, "Unsupported data type in Material::SetUniformValue()");
+				static_assert(std::is_same<T, std::false_type>(), "Unsupported data type in Material::SetUniformValue()");
 			}
 		}
 
